@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friction Log · Sportisimo Offsite 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0F2240; --blue:#1A4A8A; --mid:#2E75B6; --accent:#E8480A;
+  --gold:#F0A500; --light:#EDF3FB; --border:#C8D8EE; --text:#1A2A3A;
+  --muted:#6A7F96; --bg:#F7F9FC; --white:#FFFFFF;
+  --success:#1F7A4A; --success-light:#E6F5ED;
+  --warn:#B8860B; --warn-light:#FFF8E1;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── NAV TABS ── */
+.nav{background:var(--navy);display:flex;align-items:center;gap:0;padding:0 32px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.nav-logo{font-family:'DM Serif Display',serif;color:rgba(255,255,255,0.5);font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:14px 20px 14px 0;border-right:1px solid rgba(255,255,255,0.1);margin-right:16px}
+.nav-tab{padding:14px 18px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none}
+.nav-tab:hover{color:rgba(255,255,255,0.75)}
+.nav-tab.active{color:#fff;border-bottom-color:var(--mid)}
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-size:10px;font-weight:600;width:18px;height:18px;border-radius:50%;margin-left:6px;vertical-align:middle}
+
+/* ── VIEWS ── */
+.view{display:none}.view.active{display:block}
+
+/* ── HERO ── */
+.hero{background:var(--navy);padding:0;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-80px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(46,117,182,.22) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:760px;margin:0 auto;padding:44px 32px 36px;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(46,117,182,.2);border:1px solid rgba(46,117,182,.4);color:#A8C8F0;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:18px}
+.hero-eyebrow span{color:var(--gold)}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(28px,4.5vw,42px);color:#fff;line-height:1.15;margin-bottom:10px}
+.hero h1 em{font-style:italic;color:#7CB4E8}
+.hero-sub{color:#8AAAC8;font-size:14px;font-weight:300;line-height:1.65;max-width:500px;margin-bottom:24px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:7px;color:#7090B0;font-size:13px}
+.hero-meta-item .dot{width:5px;height:5px;border-radius:50%;background:var(--mid);flex-shrink:0}
+.hero-meta-item strong{color:#A8C8F0;font-weight:500}
+
+/* ── WEBHOOK BANNER ── */
+.webhook-banner{background:var(--warn-light);border:1px solid #F0C040;border-radius:10px;padding:12px 16px;margin:0 auto 20px;max-width:760px;font-size:13px;color:#7A5800;display:flex;align-items:flex-start;gap:10px}
+.webhook-banner-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.webhook-banner a{color:var(--blue);font-weight:500;text-decoration:underline;cursor:pointer}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:var(--navy);border-top:1px solid rgba(255,255,255,0.06);padding:12px 32px;position:sticky;top:0;z-index:100}
+.progress-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.progress-track{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--mid),#5BA8E8);border-radius:2px;transition:width .4s ease;width:0%}
+.progress-label{font-size:11px;color:#7090B0;white-space:nowrap;min-width:42px;text-align:right}
+.progress-steps{display:flex;gap:5px}
+.step-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .3s}
+.step-dot.active{background:var(--mid)}.step-dot.done{background:var(--success)}
+
+/* ── MAIN ── */
+.main{max-width:760px;margin:0 auto;padding:32px 32px 80px}
+
+/* ── SECTION ── */
+.section{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;transition:box-shadow .2s;animation:slideIn .35s ease both}
+.section:hover{box-shadow:0 4px 18px rgba(15,34,64,.07)}
+.section-header{display:flex;align-items:flex-start;gap:14px;padding:20px 24px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--light) 0%,#fff 100%)}
+.section-letter{width:34px;height:34px;border-radius:9px;background:var(--navy);color:#fff;font-family:'DM Serif Display',serif;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.section-title-group h2{font-family:'DM Serif Display',serif;font-size:17px;color:var(--navy);margin-bottom:2px}
+.section-title-group p{font-size:12px;color:var(--muted);font-weight:300;line-height:1.5}
+.section-body{padding:20px 24px}
+
+/* ── FIELDS ── */
+.field{margin-bottom:18px}.field:last-child{margin-bottom:0}
+.field-label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px}
+.field-label .req{color:var(--accent);margin-left:3px}
+.field-hint{font-size:12px;color:var(--muted);font-weight:300;margin-bottom:7px;line-height:1.5}
+input[type=text],textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;transition:border-color .2s,box-shadow .2s;outline:none}
+input[type=text]{padding:10px 13px}
+textarea{padding:11px 13px;resize:vertical;min-height:90px;line-height:1.6}
+input[type=text]:focus,textarea:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(46,117,182,.12)}
+input[type=text]::placeholder,textarea::placeholder{color:#B0C0D0;font-weight:300}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:3px;font-weight:300}
+.field-error{font-size:12px;color:var(--accent);margin-top:4px;display:none}
+.field.has-error input,.field.has-error textarea{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,72,10,.1)}
+.field.has-error .field-error{display:block}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.callout{background:var(--light);border-left:3px solid var(--mid);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--blue);line-height:1.6;margin-bottom:18px;font-weight:300}
+.callout strong{font-weight:600;color:var(--navy)}
+
+/* ── RATING ── */
+.rating-block{margin-bottom:16px}.rating-block:last-child{margin-bottom:0}
+.rating-question{font-size:13px;font-weight:500;color:var(--text);margin-bottom:9px;line-height:1.5}
+.rating-row{display:flex;gap:7px;align-items:stretch}
+.rating-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;border:1.5px solid var(--border);border-radius:9px;padding:9px 3px 7px;cursor:pointer;background:#fff;transition:all .15s}
+.rating-btn:hover{border-color:var(--mid);background:var(--light)}
+.rating-btn.selected{border-color:var(--mid);background:var(--light)}
+.rating-btn.selected .rating-num{background:var(--mid);color:#fff}
+.rating-num{width:26px;height:26px;border-radius:50%;background:var(--bg);font-size:13px;font-weight:600;color:var(--navy);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rating-text{font-size:10px;color:var(--muted);text-align:center;line-height:1.3;font-weight:300}
+
+/* ── DRAG PRIORITY ── */
+.drag-hint{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.drag-hint::before{content:'⇅';font-style:normal;color:var(--mid)}
+.priority-list{display:flex;flex-direction:column;gap:7px}
+.priority-item{display:flex;align-items:center;gap:11px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;cursor:grab;transition:all .15s;user-select:none}
+.priority-item:active{cursor:grabbing}
+.priority-item.dragging{opacity:.45;border-color:var(--mid)}
+.priority-item.drag-over{border-color:var(--mid);background:var(--light);transform:scale(1.01)}
+.priority-rank{width:26px;height:26px;border-radius:7px;background:var(--navy);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.priority-handle{color:var(--muted);font-size:15px;flex-shrink:0}
+.priority-text{font-size:13px;color:var(--text);line-height:1.4;flex:1}
+
+/* ── SUBMIT ── */
+.submit-section{background:var(--navy);border-radius:14px;padding:28px 24px;text-align:center;margin-bottom:18px}
+.submit-section h3{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;margin-bottom:6px}
+.submit-section p{font-size:13px;color:#7090B0;font-weight:300;margin-bottom:20px}
+.btn-submit{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:13px 36px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-submit:hover{background:#C93800;transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,72,10,.35)}
+.btn-submit:disabled{background:#aaa;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── SUCCESS ── */
+.success-screen{display:none;background:#fff;border:1px solid var(--border);border-radius:14px;padding:52px 28px;text-align:center;margin-bottom:18px}
+.success-icon{width:60px;height:60px;border-radius:50%;background:var(--success-light);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px}
+.success-screen h2{font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:8px}
+.success-screen p{font-size:13px;color:var(--muted);font-weight:300;line-height:1.7;max-width:420px;margin:0 auto 24px}
+.btn-sec{background:var(--light);color:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;margin:0 5px}
+.btn-sec:hover{background:var(--border)}
+
+/* ── DASHBOARD ── */
+.dash-main{max-width:960px;margin:0 auto;padding:32px 32px 80px}
+.dash-hero{background:var(--navy);border-radius:14px;padding:28px 28px 24px;margin-bottom:24px;position:relative;overflow:hidden}
+.dash-hero::after{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(46,117,182,.2) 0%,transparent 70%);pointer-events:none}
+.dash-hero h2{font-family:'DM Serif Display',serif;font-size:22px;color:#fff;margin-bottom:4px}
+.dash-hero p{font-size:13px;color:#7090B0;font-weight:300}
+.dash-hero-meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap}
+.dash-stat{text-align:center}
+.dash-stat .val{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;display:block}
+.dash-stat .lbl{font-size:11px;color:#7090B0;font-weight:300;text-transform:uppercase;letter-spacing:.08em}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.dash-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 20px 18px;overflow:hidden}
+.dash-card.full{grid-column:1/-1}
+.dash-card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.dash-card-title span{font-size:11px;font-weight:400;color:var(--border);text-transform:none;letter-spacing:0}
+
+/* rating bars */
+.rating-metric{margin-bottom:14px}.rating-metric:last-child{margin-bottom:0}
+.rm-label{font-size:13px;color:var(--text);margin-bottom:5px;display:flex;justify-content:space-between;align-items:baseline}
+.rm-score{font-weight:600;color:var(--navy);font-size:15px}
+.rm-bar-track{height:8px;background:var(--light);border-radius:4px;overflow:hidden}
+.rm-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.rm-count{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* distribution dots */
+.dist-row{display:flex;gap:5px;align-items:center;margin-bottom:6px}
+.dist-num{font-size:12px;font-weight:600;color:var(--navy);width:16px;text-align:right;flex-shrink:0}
+.dist-bar{flex:1;display:flex;gap:3px;align-items:center}
+.dist-fill{height:16px;border-radius:3px;min-width:3px;transition:width .6s ease}
+.dist-count{font-size:11px;color:var(--muted);margin-left:4px;flex-shrink:0}
+
+/* priority ranking */
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.rank-item:last-child{border-bottom:none}
+.rank-pos{width:22px;height:22px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rank-label{font-size:13px;color:var(--text);flex:1}
+.rank-score{font-size:12px;font-weight:600;color:var(--mid)}
+.rank-bar{width:80px;height:6px;background:var(--light);border-radius:3px;overflow:hidden;flex-shrink:0}
+.rank-fill{height:100%;background:var(--mid);border-radius:3px}
+
+/* responses table */
+.resp-table{width:100%;border-collapse:collapse;font-size:12px}
+.resp-table th{text-align:left;padding:8px 10px;background:var(--light);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.resp-table td{padding:10px 10px;border-bottom:1px solid #F0F4F8;vertical-align:top;color:var(--text);line-height:1.5}
+.resp-table tr:last-child td{border-bottom:none}
+.resp-table tr:hover td{background:var(--bg)}
+.role-badge{display:inline-block;background:var(--light);color:var(--blue);font-size:11px;font-weight:500;padding:2px 8px;border-radius:12px}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state .empty-icon{font-size:36px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:13px;font-weight:300;line-height:1.6}
+
+/* no-data placeholder */
+.no-responses{background:#fff;border:1px solid var(--border);border-radius:12px;padding:60px 32px;text-align:center}
+.no-responses .nr-icon{font-size:48px;margin-bottom:16px;opacity:.3}
+.no-responses h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);margin-bottom:8px}
+.no-responses p{font-size:13px;color:var(--muted);font-weight:300;line-height:1.7;max-width:400px;margin:0 auto}
+
+/* export btn */
+.dash-actions{display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px}
+.btn-export{background:#fff;color:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-export:hover{background:var(--light);border-color:var(--mid)}
+
+/* ── ANIMATIONS ── */
+@keyframes slideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:slideIn .35s ease both}
+.section:nth-child(1){animation-delay:.04s}.section:nth-child(2){animation-delay:.08s}
+.section:nth-child(3){animation-delay:.12s}.section:nth-child(4){animation-delay:.16s}
+.section:nth-child(5){animation-delay:.20s}.section:nth-child(6){animation-delay:.24s}
+@media(max-width:640px){
+  .dash-grid{grid-template-columns:1fr}
+  .main,.dash-main{padding:20px 16px 60px}
+  .section-body{padding:16px}
+  .section-header{padding:16px}
+  .hero-inner{padding:32px 20px 26px}
+  .nav{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">Sportisimo</div>
+  <div class="nav-tab active" onclick="switchView('form')">Formulář</div>
+  <div class="nav-tab" onclick="switchView('dashboard')" id="dashTab">
+    Dashboard <span class="nav-badge" id="responseBadge">0</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: FORMULÁŘ
+══════════════════════════════════════════ -->
+<div class="view active" id="view-form">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><span>●</span> Sportisimo · Offsite 2026</div>
+      <h1>Friction Log<br><em>Replenishment & Demand Planning</em></h1>
+      <p class="hero-sub">Před setkáním si chceme vyslechnout každého zvlášť — bez časového tlaku. Tvoje odpovědi jsou základem efektivní diskuze na offsitu.</p>
+      <div class="hero-meta">
+        <div class="hero-meta-item"><div class="dot"></div><strong>Offsite:</strong>&nbsp;14.–15. 7. 2026</div>
+        <div class="hero-meta-item"><div class="dot"></div><strong>Termín:</strong>&nbsp;7. 7. 2026</div>
+        <div class="hero-meta-item"><div class="dot"></div><strong>Čas vyplnění:</strong>&nbsp;~12 minut</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <div class="progress-steps" id="steps"></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0 %</div>
+    </div>
+  </div>
+
+  <!-- WEBHOOK CONFIG BANNER -->
+  <div class="main" style="padding-top:24px;padding-bottom:0">
+    <div class="webhook-banner" id="webhookBanner">
+      <div class="webhook-banner-icon">⚠️</div>
+      <div>
+        <strong>SharePoint napojení není nakonfigurováno.</strong>
+        Odpovědi se zatím ukládají pouze lokálně v prohlížeči (pro demo).
+        <a onclick="showWebhookHelp()">Jak napojit na SharePoint →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+  <form id="frictionForm" novalidate>
+
+    <!-- A: IDENTIFIKACE -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">A</div>
+        <div class="section-title-group">
+          <h2>Identifikace</h2>
+          <p>Tvoje role v procesu — abychom mohli odpovědi správně kontextualizovat.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field" id="f-role">
+          <label class="field-label">Role / funkce <span class="req">*</span></label>
+          <div class="field-hint">Napiš svoji pozici nebo funkci v rámci replenishment procesu.</div>
+          <input type="text" name="role" placeholder="Např. Demand Planner, Category Manager, Vedoucí skladu, Nákupčí…" required>
+          <div class="field-error">Toto pole je povinné.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B: HODNOCENÍ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">B</div>
+        <div class="section-title-group">
+          <h2>Celkové hodnocení procesu</h2>
+          <p>Ohodnoť na škále 1–5, kde 1 = velmi špatně, 5 = velmi dobře.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="rating-block">
+          <div class="rating-question">Celková efektivita replenishment procesu</div>
+          <div class="rating-row" data-rating="efficiency">
+            <button type="button" class="rating-btn" data-val="1"><div class="rating-num">1</div><div class="rating-text">Velmi špatně</div></button>
+            <button type="button" class="rating-btn" data-val="2"><div class="rating-num">2</div><div class="rating-text">Špatně</div></button>
+            <button type="button" class="rating-btn" data-val="3"><div class="rating-num">3</div><div class="rating-text">Neutrálně</div></button>
+            <button type="button" class="rating-btn" data-val="4"><div class="rating-num">4</div><div class="rating-text">Dobře</div></button>
+            <button type="button" class="rating-btn" data-val="5"><div class="rating-num">5</div><div class="rating-text">Velmi dobře</div></button>
+          </div>
+          <input type="hidden" name="rating_efficiency">
+        </div>
+        <div class="divider"></div>
+        <div class="rating-block">
+          <div class="rating-question">Kvalita a dostupnost dat pro rozhodování</div>
+          <div class="rating-row" data-rating="data">
+            <button type="button" class="rating-btn" data-val="1"><div class="rating-num">1</div><div class="rating-text">Velmi špatně</div></button>
+            <button type="button" class="rating-btn" data-val="2"><div class="rating-num">2</div><div class="rating-text">Špatně</div></button>
+            <button type="button" class="rating-btn" data-val="3"><div class="rating-num">3</div><div class="rating-text">Neutrálně</div></button>
+            <button type="button" class="rating-btn" data-val="4"><div class="rating-num">4</div><div class="rating-text">Dobře</div></button>
+            <button type="button" class="rating-btn" data-val="5"><div class="rating-num">5</div><div class="rating-text">Velmi dobře</div></button>
+          </div>
+          <input type="hidden" name="rating_data">
+        </div>
+        <div class="divider"></div>
+        <div class="rating-block">
+          <div class="rating-question">Komunikace mezi týmy (nákup, sklad, demand planning)</div>
+          <div class="rating-row" data-rating="comms">
+            <button type="button" class="rating-btn" data-val="1"><div class="rating-num">1</div><div class="rating-text">Velmi špatně</div></button>
+            <button type="button" class="rating-btn" data-val="2"><div class="rating-num">2</div><div class="rating-text">Špatně</div></button>
+            <button type="button" class="rating-btn" data-val="3"><div class="rating-num">3</div><div class="rating-text">Neutrálně</div></button>
+            <button type="button" class="rating-btn" data-val="4"><div class="rating-num">4</div><div class="rating-text">Dobře</div></button>
+            <button type="button" class="rating-btn" data-val="5"><div class="rating-num">5</div><div class="rating-text">Velmi dobře</div></button>
+          </div>
+          <input type="hidden" name="rating_comms">
+        </div>
+        <div class="divider"></div>
+        <div class="rating-block">
+          <div class="rating-question">Podpora ze strany systémů a nástrojů</div>
+          <div class="rating-row" data-rating="systems">
+            <button type="button" class="rating-btn" data-val="1"><div class="rating-num">1</div><div class="rating-text">Velmi špatně</div></button>
+            <button type="button" class="rating-btn" data-val="2"><div class="rating-num">2</div><div class="rating-text">Špatně</div></button>
+            <button type="button" class="rating-btn" data-val="3"><div class="rating-num">3</div><div class="rating-text">Neutrálně</div></button>
+            <button type="button" class="rating-btn" data-val="4"><div class="rating-num">4</div><div class="rating-text">Dobře</div></button>
+            <button type="button" class="rating-btn" data-val="5"><div class="rating-num">5</div><div class="rating-text">Velmi dobře</div></button>
+          </div>
+          <input type="hidden" name="rating_systems">
+        </div>
+      </div>
+    </div>
+
+    <!-- C: FRUSTRACE -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">C</div>
+        <div class="section-title-group">
+          <h2>Frustrace a bariéry</h2>
+          <p>Buď konkrétní — čím přesnější, tím cennější pro diskuzi.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field" id="f-friction">
+          <label class="field-label">Co tě v procesu nejvíce brzdí nebo frustruje? <span class="req">*</span></label>
+          <div class="field-hint">Napiš 2–3 konkrétní věci, které tě pravidelně zdržují.</div>
+          <textarea name="friction" placeholder="Např: Data ze systému přichází s 2denním zpožděním, takže objednávám na základě zastaralých čísel…" rows="5" maxlength="800" oninput="updateCount(this,'cnt-friction')"></textarea>
+          <div class="char-count"><span id="cnt-friction">0</span> / 800</div>
+          <div class="field-error">Toto pole je povinné.</div>
+        </div>
+        <div class="field" id="f-timewaste">
+          <label class="field-label">Kde ztrácíš nejvíce času? <span class="req">*</span></label>
+          <div class="field-hint">Konkrétní činnost + odhad hodin týdně.</div>
+          <textarea name="timewaste" placeholder="Např: Manuální opravy forecastu v Excelu — cca 4–5 hodin týdně…" rows="4" maxlength="600" oninput="updateCount(this,'cnt-time')"></textarea>
+          <div class="char-count"><span id="cnt-time">0</span> / 600</div>
+          <div class="field-error">Toto pole je povinné.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Kde rozhoduješ naslepo — bez dostatečných dat?</label>
+          <textarea name="blind" placeholder="Situace, kdy nemáš dostatečné podklady pro rozhodnutí…" rows="3" maxlength="600" oninput="updateCount(this,'cnt-blind')"></textarea>
+          <div class="char-count"><span id="cnt-blind">0</span> / 600</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D: PŘÍKLAD -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">D</div>
+        <div class="section-title-group">
+          <h2>Konkrétní příklad selhání</h2>
+          <p>Jeden případ z posledních 6 měsíců — hledáme příčiny, ne viníky.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="callout"><strong>Proč to chceme?</strong> Konkrétní příklady nám pomůžou identifikovat skutečné kořenové příčiny místo povrchových symptomů.</div>
+        <div class="field" id="f-case">
+          <label class="field-label">Co se stalo? <span class="req">*</span></label>
+          <textarea name="case_what" placeholder="Stručný popis situace — kategorie, SKU, kontext…" rows="4" maxlength="600" oninput="updateCount(this,'cnt-what')"></textarea>
+          <div class="char-count"><span id="cnt-what">0</span> / 600</div>
+          <div class="field-error">Toto pole je povinné.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Jaký byl dopad?</label>
+          <textarea name="case_impact" placeholder="Finanční, operační nebo zákaznický dopad…" rows="3" maxlength="400" oninput="updateCount(this,'cnt-impact')"></textarea>
+          <div class="char-count"><span id="cnt-impact">0</span> / 400</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Proč si myslíš, že k tomu došlo?</label>
+          <textarea name="case_why" placeholder="Tvůj pohled na příčinu…" rows="3" maxlength="400" oninput="updateCount(this,'cnt-why')"></textarea>
+          <div class="char-count"><span id="cnt-why">0</span> / 400</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E: PRIORITIZACE -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">E</div>
+        <div class="section-title-group">
+          <h2>Prioritizace problémů</h2>
+          <p>Přetáhni položky — nahoře tvůj největší problém.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="drag-hint">Přetáhni položky myší pro seřazení</div>
+        <div class="priority-list" id="priorityList">
+          <div class="priority-item" draggable="true" data-id="data"><div class="priority-rank">1</div><div class="priority-handle">⠿</div><div class="priority-text">Kvalita a dostupnost dat (forecast, sell-through, sezónnost)</div></div>
+          <div class="priority-item" draggable="true" data-id="comms"><div class="priority-rank">2</div><div class="priority-handle">⠿</div><div class="priority-text">Komunikace a předávání informací mezi týmy</div></div>
+          <div class="priority-item" draggable="true" data-id="systems"><div class="priority-rank">3</div><div class="priority-handle">⠿</div><div class="priority-text">Systémová podpora — nástroje, automatizace, reporting</div></div>
+          <div class="priority-item" draggable="true" data-id="ordering"><div class="priority-rank">4</div><div class="priority-handle">⠿</div><div class="priority-text">Procesy objednávání — frekvence, schvalování, manuální zásahy</div></div>
+          <div class="priority-item" draggable="true" data-id="capacity"><div class="priority-rank">5</div><div class="priority-handle">⠿</div><div class="priority-text">Kapacita týmu — čas, přetížení, nedostatek zdrojů</div></div>
+          <div class="priority-item" draggable="true" data-id="ownership"><div class="priority-rank">6</div><div class="priority-handle">⠿</div><div class="priority-text">Nejasné zodpovědnosti — kdo za co ručí</div></div>
+          <div class="priority-item" draggable="true" data-id="other"><div class="priority-rank">7</div><div class="priority-handle">⠿</div><div class="priority-text">Jiné</div></div>
+        </div>
+        <input type="hidden" name="priority_order" id="priorityOrder">
+        <div class="divider"></div>
+        <div class="field">
+          <label class="field-label">Co v seznamu chybí?</label>
+          <input type="text" name="priority_other" placeholder="Oblast, která v seznamu není…">
+        </div>
+      </div>
+    </div>
+
+    <!-- F: NÁVRHY -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-letter">F</div>
+        <div class="section-title-group">
+          <h2>Návrhy a přání</h2>
+          <p>Co změnit, zachovat a na offsitu rozhodně probrat.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field" id="f-change">
+          <label class="field-label">Kdybys mohl/a jednu věc okamžitě změnit, co by to bylo? <span class="req">*</span></label>
+          <textarea name="change" placeholder="Konkrétní změna — co přesně a jak by to fungovalo jinak…" rows="4" maxlength="600" oninput="updateCount(this,'cnt-change')"></textarea>
+          <div class="char-count"><span id="cnt-change">0</span> / 600</div>
+          <div class="field-error">Toto pole je povinné.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Co funguje dobře a mělo by zůstat?</label>
+          <textarea name="keep" placeholder="Co v procesu oceňuješ a nechceš ztratit?…" rows="3" maxlength="400" oninput="updateCount(this,'cnt-keep')"></textarea>
+          <div class="char-count"><span id="cnt-keep">0</span> / 400</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Co bys na offsitu chtěl/a rozhodně probrat?</label>
+          <textarea name="must_discuss" placeholder="Téma nebo otázka, která by neměla být přeskočena…" rows="3" maxlength="400" oninput="updateCount(this,'cnt-must')"></textarea>
+          <div class="char-count"><span id="cnt-must">0</span> / 400</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-section">
+      <h3>Vše vyplněno? Odešli odpovědi.</h3>
+      <p>Odpovědi budou agregovány do dashboardu a prezentovány na offsitu. Děkujeme.</p>
+      <button type="submit" class="btn-submit" id="submitBtn">Odeslat friction log →</button>
+    </div>
+
+  </form>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>Friction log odeslán</h2>
+    <p>Děkujeme za vyplnění. Tvoje odpovědi jsou součástí souhrnného přehledu před offsitem 14.–15. 7. 2026.</p>
+    <button class="btn-sec" onclick="switchView('dashboard')">📊 Zobrazit dashboard</button>
+    <button class="btn-sec" onclick="resetForm()">↩ Vyplnit znovu</button>
+  </div>
+
+  </div><!-- /main -->
+</div><!-- /view-form -->
+
+<!-- ══════════════════════════════════════════
+     VIEW: DASHBOARD
+══════════════════════════════════════════ -->
+<div class="view" id="view-dashboard">
+  <div class="dash-main">
+
+    <!-- DASH HERO -->
+    <div class="dash-hero">
+      <h2>Dashboard — Friction Log</h2>
+      <p>Souhrnný přehled všech odeslaných odpovědí · Replenishment Offsite 2026</p>
+      <div class="dash-hero-meta">
+        <div class="dash-stat"><span class="val" id="d-total">0</span><span class="lbl">Odpovědí</span></div>
+        <div class="dash-stat"><span class="val" id="d-avg-eff">—</span><span class="lbl">Ø Efektivita</span></div>
+        <div class="dash-stat"><span class="val" id="d-avg-data">—</span><span class="lbl">Ø Data</span></div>
+        <div class="dash-stat"><span class="val" id="d-avg-comms">—</span><span class="lbl">Ø Komunikace</span></div>
+      </div>
+    </div>
+
+    <div id="emptyDash" class="no-responses">
+      <div class="nr-icon">📋</div>
+      <h3>Zatím žádné odpovědi</h3>
+      <p>Dashboard se naplní daty jakmile členové týmu odešlou formulář. Odpovědi se zobrazí okamžitě po odeslání.</p>
+    </div>
+
+    <div id="dashContent" style="display:none">
+
+      <div class="dash-actions">
+        <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-export" onclick="window.print()">🖨 Tisk</button>
+      </div>
+
+      <!-- RATINGS + PRIORITY -->
+      <div class="dash-grid">
+
+        <!-- Hodnocení -->
+        <div class="dash-card">
+          <div class="dash-card-title">Průměrné hodnocení <span>1 = špatně · 5 = dobře</span></div>
+          <div id="d-ratings"></div>
+        </div>
+
+        <!-- Distribuce -->
+        <div class="dash-card">
+          <div class="dash-card-title">Distribuce hodnocení — Efektivita procesu</div>
+          <div id="d-dist"></div>
+        </div>
+
+        <!-- Prioritizace -->
+        <div class="dash-card full">
+          <div class="dash-card-title">Prioritizace problémů <span>nižší skóre = větší bolest týmu</span></div>
+          <div id="d-priority"></div>
+        </div>
+
+        <!-- Frustrace -->
+        <div class="dash-card full">
+          <div class="dash-card-title">Největší frustrace a bariéry</div>
+          <div id="d-friction-list"></div>
+        </div>
+
+        <!-- Příklady -->
+        <div class="dash-card full">
+          <div class="dash-card-title">Konkrétní příklady selhání</div>
+          <div id="d-cases"></div>
+        </div>
+
+        <!-- Návrhy -->
+        <div class="dash-card full">
+          <div class="dash-card-title">Klíčové návrhy změn</div>
+          <div id="d-changes"></div>
+        </div>
+
+        <!-- Musí se probrat -->
+        <div class="dash-card full">
+          <div class="dash-card-title">Témata pro offsite — co musí být probráno</div>
+          <div id="d-mustdiscuss"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEBHOOK MODAL -->
+<div id="webhookModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:32px;position:relative;max-height:90vh;overflow-y:auto">
+    <button onclick="closeWebhookHelp()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">×</button>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);margin-bottom:16px">Napojení na SharePoint přes Power Automate</h3>
+    <div style="font-size:13px;color:var(--text);line-height:1.8">
+      <p style="margin-bottom:12px"><strong>Krok 1 — SharePoint list</strong><br>Na svém SharePoint site vytvoř nový List s těmito sloupci:<br>
+      <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px">Role, Rating_Efficiency, Rating_Data, Rating_Comms, Rating_Systems, Friction, Timewaste, Blind, Case_What, Case_Impact, Case_Why, Priority_Order, Priority_Other, Change, Keep, Must_Discuss, Submitted_At</code></p>
+      <p style="margin-bottom:12px"><strong>Krok 2 — Power Automate flow</strong><br>
+      1. Přejdi na <strong>make.powerautomate.com</strong><br>
+      2. Nový flow → <em>Instant cloud flow</em> → trigger: <strong>When an HTTP request is received</strong><br>
+      3. Zkopíruj vygenerovanou HTTP POST URL<br>
+      4. Přidej akci: <strong>SharePoint → Create item</strong> → vyber svůj site a list<br>
+      5. Namapuj JSON pole na sloupce listu<br>
+      6. Ulož flow → zkopíruj URL</p>
+      <p style="margin-bottom:16px"><strong>Krok 3 — Vlož URL do formuláře</strong><br>
+      Otevři soubor HTML, najdi řádek <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px">const WEBHOOK_URL = ''</code> a vlož tam svoji Power Automate URL.</p>
+      <p style="color:var(--muted);font-size:12px">⚠️ Power Automate URL obsahuje autentizační token — nikomu ji nesdílej veřejně. HTML soubor by měl být dostupný pouze interně (SharePoint stránka, Teams tab).</p>
+    </div>
+    <button onclick="closeWebhookHelp()" style="margin-top:20px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;width:100%">Zavřít</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// KONFIGURACE — vlož sem svoji Power Automate URL
+// ─────────────────────────────────────────────
+const WEBHOOK_URL = 'https://default1031b4ab43cd4afb9687f782f3ad31.75.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/151ee55929544230bfd7da3b32bc2791/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=HaeJVqGazOyCEaHuTAci6EB5o3P7jq7JE08mJ6qIHhk';
+// Příklad: 'https://prod-12.westeurope.logic.azure.com:443/workflows/abc.../triggers/manual/paths/invoke?...'
+
+// ─────────────────────────────────────────────
+// PRIORITY LABELS
+// ─────────────────────────────────────────────
+const PRIORITY_LABELS = {
+  data:      'Kvalita a dostupnost dat',
+  comms:     'Komunikace mezi týmy',
+  systems:   'Systémová podpora',
+  ordering:  'Procesy objednávání',
+  capacity:  'Kapacita týmu',
+  ownership: 'Nejasné zodpovědnosti',
+  other:     'Jiné'
+};
+
+// ─────────────────────────────────────────────
+// LOCAL STORAGE (fallback bez backendu)
+// ─────────────────────────────────────────────
+function getResponses() {
+  try { return JSON.parse(localStorage.getItem('fl_responses') || '[]'); } catch { return []; }
+}
+function saveResponse(data) {
+  const all = getResponses();
+  all.push(data);
+  localStorage.setItem('fl_responses', JSON.stringify(all));
+}
+
+// ─────────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────────
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nav-tab')[v === 'form' ? 0 : 1].classList.add('active');
+  if (v === 'dashboard') renderDashboard();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ─────────────────────────────────────────────
+// PROGRESS
+// ─────────────────────────────────────────────
+const sections = document.querySelectorAll('#view-form .section');
+const stepsEl = document.getElementById('steps');
+const fillEl = document.getElementById('progressFill');
+const labelEl = document.getElementById('progressLabel');
+
+sections.forEach(() => {
+  const d = document.createElement('div');
+  d.className = 'step-dot';
+  stepsEl.appendChild(d);
+});
+
+function updateProgress() {
+  const dots = stepsEl.querySelectorAll('.step-dot');
+  let filled = 0;
+  sections.forEach((sec, i) => {
+    const inputs = sec.querySelectorAll('input:not([type=hidden]),textarea');
+    let hasVal = false;
+    inputs.forEach(inp => { if (inp.value.trim()) hasVal = true; });
+    sec.querySelectorAll('input[type=hidden][name^=rating]').forEach(r => { if (r.value) hasVal = true; });
+    if (hasVal) { dots[i].classList.add('active'); filled++; }
+    else dots[i].classList.remove('active');
+  });
+  const pct = Math.round((filled / sections.length) * 100);
+  fillEl.style.width = pct + '%';
+  labelEl.textContent = pct + ' %';
+  updateBadge();
+}
+
+document.getElementById('frictionForm').addEventListener('input', updateProgress);
+
+// ─────────────────────────────────────────────
+// RATING BUTTONS
+// ─────────────────────────────────────────────
+document.querySelectorAll('.rating-row').forEach(row => {
+  const hidden = document.querySelector(`input[name="rating_${row.dataset.rating}"]`);
+  row.querySelectorAll('.rating-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      row.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      hidden.value = btn.dataset.val;
+      updateProgress();
+    });
+  });
+});
+
+// ─────────────────────────────────────────────
+// CHAR COUNT
+// ─────────────────────────────────────────────
+function updateCount(el, id) {
+  document.getElementById(id).textContent = el.value.length;
+}
+
+// ─────────────────────────────────────────────
+// DRAG & DROP
+// ─────────────────────────────────────────────
+let dragged = null;
+const list = document.getElementById('priorityList');
+
+list.querySelectorAll('.priority-item').forEach(item => {
+  item.addEventListener('dragstart', () => {
+    dragged = item;
+    setTimeout(() => item.classList.add('dragging'), 0);
+  });
+  item.addEventListener('dragend', () => {
+    item.classList.remove('dragging');
+    list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+    updateRanks(); savePriorityOrder();
+  });
+  item.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (item === dragged) return;
+    list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+    item.classList.add('drag-over');
+    const mid = item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2;
+    if (e.clientY < mid) list.insertBefore(dragged, item);
+    else list.insertBefore(dragged, item.nextSibling);
+  });
+  item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+  item.addEventListener('drop', e => e.preventDefault());
+});
+
+function updateRanks() {
+  list.querySelectorAll('.priority-item').forEach((item, i) => {
+    item.querySelector('.priority-rank').textContent = i + 1;
+    const r = item.querySelector('.priority-rank');
+    r.style.background = i === 0 ? '#B8860B' : i === 1 ? '#708090' : i === 2 ? '#8B4513' : 'var(--navy)';
+  });
+}
+
+function savePriorityOrder() {
+  const order = [...list.querySelectorAll('.priority-item')].map(i => i.dataset.id);
+  document.getElementById('priorityOrder').value = order.join(',');
+}
+savePriorityOrder();
+
+// ─────────────────────────────────────────────
+// VALIDATION
+// ─────────────────────────────────────────────
+function validate() {
+  let ok = true;
+  [['f-role','role'],['f-friction','friction'],['f-timewaste','timewaste'],['f-case','case_what'],['f-change','change']].forEach(([fid, name]) => {
+    const fel = document.getElementById(fid);
+    const inp = document.querySelector(`[name="${name}"]`);
+    if (!inp.value.trim()) { fel.classList.add('has-error'); ok = false; }
+    else fel.classList.remove('has-error');
+  });
+  return ok;
+}
+
+// ─────────────────────────────────────────────
+// SUBMIT
+// ─────────────────────────────────────────────
+document.getElementById('frictionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  if (!validate()) {
+    document.querySelector('.has-error').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  const fd = new FormData(this);
+  const data = { submitted_at: new Date().toISOString() };
+  fd.forEach((v, k) => data[k] = v);
+  data.priority_order = document.getElementById('priorityOrder').value;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Odesílám…';
+
+  // Pokus o odeslání na SharePoint webhook
+  if (WEBHOOK_URL) {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (err) {
+      console.warn('Webhook nedostupný, ukládám lokálně:', err);
+    }
+  }
+
+  // Vždy ulož lokálně (pro dashboard)
+  saveResponse(data);
+  updateBadge();
+
+  document.getElementById('frictionForm').style.display = 'none';
+  document.querySelector('.submit-section').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  document.getElementById('successScreen').scrollIntoView({behavior:'smooth'});
+
+  fillEl.style.width = '100%';
+  labelEl.textContent = '100 %';
+  stepsEl.querySelectorAll('.step-dot').forEach(d => { d.classList.remove('active'); d.classList.add('done'); });
+});
+
+function resetForm() {
+  document.getElementById('frictionForm').reset();
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('input[type=hidden][name^=rating]').forEach(i => i.value = '');
+  document.getElementById('frictionForm').style.display = 'block';
+  document.querySelector('.submit-section').style.display = 'block';
+  document.getElementById('successScreen').style.display = 'none';
+  savePriorityOrder(); updateRanks(); updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateBadge() {
+  const n = getResponses().length;
+  document.getElementById('responseBadge').textContent = n;
+}
+updateBadge();
+
+// ─────────────────────────────────────────────
+// DASHBOARD RENDER
+// ─────────────────────────────────────────────
+function avg(arr) { return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null; }
+
+function barColor(score) {
+  if (score <= 2) return '#E8480A';
+  if (score <= 3) return '#F0A500';
+  return '#1F7A4A';
+}
+
+function textList(items, field) {
+  const vals = items.map(r => r[field]).filter(Boolean);
+  if (!vals.length) return '<div class="empty-state"><p>Žádné odpovědi</p></div>';
+  return vals.map((v, i) => `
+    <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);${i===vals.length-1?'border-bottom:none':''}">
+      <div style="min-width:28px;height:28px;border-radius:7px;background:var(--light);color:var(--blue);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;flex:1">${escHtml(v)}<div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(items[i].role||'—')}</div></div>
+    </div>`).join('');
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderDashboard() {
+  const rs = getResponses();
+  document.getElementById('emptyDash').style.display = rs.length ? 'none' : 'block';
+  document.getElementById('dashContent').style.display = rs.length ? 'block' : 'none';
+  if (!rs.length) return;
+
+  // Hero stats
+  document.getElementById('d-total').textContent = rs.length;
+  ['eff','data','comms'].forEach((k,i) => {
+    const key = ['efficiency','data','comms'][i];
+    const vals = rs.map(r=>parseInt(r['rating_'+key])).filter(n=>!isNaN(n));
+    document.getElementById('d-avg-'+k).textContent = avg(vals) || '—';
+  });
+
+  // Ratings
+  const ratingDefs = [
+    { key:'efficiency', label:'Efektivita procesu' },
+    { key:'data', label:'Kvalita dat' },
+    { key:'comms', label:'Komunikace mezi týmy' },
+    { key:'systems', label:'Systémy a nástroje' }
+  ];
+  document.getElementById('d-ratings').innerHTML = ratingDefs.map(({key, label}) => {
+    const vals = rs.map(r=>parseInt(r['rating_'+key])).filter(n=>!isNaN(n));
+    const a = avg(vals);
+    const pct = a ? ((parseFloat(a)-1)/4)*100 : 0;
+    return `<div class="rating-metric">
+      <div class="rm-label"><span>${label}</span><span class="rm-score">${a||'—'} / 5</span></div>
+      <div class="rm-bar-track"><div class="rm-bar-fill" style="width:${pct}%;background:${barColor(parseFloat(a))}"></div></div>
+      <div class="rm-count">${vals.length} hodnocení</div>
+    </div>`;
+  }).join('');
+
+  // Distribution (efficiency)
+  const distVals = rs.map(r=>parseInt(r['rating_efficiency'])).filter(n=>!isNaN(n));
+  const maxCnt = Math.max(1, ...([1,2,3,4,5].map(n=>distVals.filter(v=>v===n).length)));
+  document.getElementById('d-dist').innerHTML = [1,2,3,4,5].map(n => {
+    const cnt = distVals.filter(v=>v===n).length;
+    const pct = Math.round((cnt/maxCnt)*100);
+    const labels = {1:'Velmi špatně',2:'Špatně',3:'Neutrálně',4:'Dobře',5:'Velmi dobře'};
+    const colors = {1:'#E8480A',2:'#F0A500',3:'#7090B0',4:'#2E75B6',5:'#1F7A4A'};
+    return `<div class="dist-row">
+      <div class="dist-num">${n}</div>
+      <div class="dist-bar">
+        <div class="dist-fill" style="width:${Math.max(pct,4)}%;background:${colors[n]}"></div>
+        <span class="dist-count">${cnt}× ${labels[n]}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Priority ranking
+  const priorityIds = ['data','comms','systems','ordering','capacity','ownership','other'];
+  const scores = {};
+  priorityIds.forEach(id => scores[id] = 0);
+  rs.forEach(r => {
+    if (!r.priority_order) return;
+    r.priority_order.split(',').forEach((id, idx) => {
+      if (scores[id] !== undefined) scores[id] += idx + 1;
+    });
+  });
+  const sorted = priorityIds.slice().sort((a,b) => scores[a]-scores[b]);
+  const minScore = scores[sorted[0]] || 1;
+  const maxScore = scores[sorted[sorted.length-1]] || 1;
+  document.getElementById('d-priority').innerHTML = sorted.map((id, i) => {
+    const s = scores[id];
+    const pct = maxScore > minScore ? Math.round(((s-minScore)/(maxScore-minScore))*100) : 50;
+    const invPct = 100 - pct;
+    return `<div class="rank-item">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-label">${PRIORITY_LABELS[id]||id}</div>
+      <div class="rank-bar"><div class="rank-fill" style="width:${invPct}%"></div></div>
+      <div class="rank-score">skóre ${s}</div>
+    </div>`;
+  }).join('');
+
+  // Text responses
+  document.getElementById('d-friction-list').innerHTML = textList(rs, 'friction');
+  document.getElementById('d-cases').innerHTML = rs.map((r,i) => {
+    if (!r.case_what) return '';
+    return `<div style="padding:14px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${escHtml(r.role||'—')}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:4px"><strong>Co se stalo:</strong> ${escHtml(r.case_what)}</div>
+      ${r.case_impact?`<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:4px"><strong>Dopad:</strong> ${escHtml(r.case_impact)}</div>`:''}
+      ${r.case_why?`<div style="font-size:13px;color:var(--text);line-height:1.6"><strong>Příčina:</strong> ${escHtml(r.case_why)}</div>`:''}
+    </div>`;
+  }).filter(Boolean).join('') || '<div class="empty-state"><p>Žádné příklady</p></div>';
+
+  document.getElementById('d-changes').innerHTML = textList(rs, 'change');
+  document.getElementById('d-mustdiscuss').innerHTML = textList(rs.filter(r=>r.must_discuss), 'must_discuss');
+}
+
+// ─────────────────────────────────────────────
+// CSV EXPORT
+// ─────────────────────────────────────────────
+function exportCSV() {
+  const rs = getResponses();
+  if (!rs.length) return;
+  const keys = ['submitted_at','role','rating_efficiency','rating_data','rating_comms','rating_systems','friction','timewaste','blind','case_what','case_impact','case_why','priority_order','change','keep','must_discuss'];
+  const header = ['Datum','Role','Efektivita','Data','Komunikace','Systémy','Frustrace','Ztráta času','Naslepo','Příklad-co','Příklad-dopad','Příklad-proč','Prioritizace','Změna','Zachovat','Probrat'];
+  const rows = rs.map(r => keys.map(k => `"${(r[k]||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [header.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'friction_log_export.csv';
+  a.click();
+}
+
+// ─────────────────────────────────────────────
+// WEBHOOK MODAL
+// ─────────────────────────────────────────────
+function showWebhookHelp() {
+  const m = document.getElementById('webhookModal');
+  m.style.display = 'flex';
+}
+function closeWebhookHelp() {
+  document.getElementById('webhookModal').style.display = 'none';
+}
+
+// Init
+updateProgress();
+if (WEBHOOK_URL) document.getElementById('webhookBanner').style.display = 'none';
+</script>
+</body>
+</html>
