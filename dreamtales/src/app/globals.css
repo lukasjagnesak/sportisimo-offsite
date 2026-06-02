@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand colors */
+  --color-navy:        #0d0d1a;
+  --color-navy-light:  #131325;
+  --color-navy-mid:    #1a1a35;
+  --color-purple:      #6b2fa0;
+  --color-purple-light:#8b45c8;
+  --color-purple-dark: #4e1f7a;
+  --color-gold:        #f9ca24;
+  --color-gold-light:  #fde68a;
+  --color-gold-dark:   #d4a017;
+  --color-soft-white:  #f0eef8;
+  --color-muted:       #a09dc0;
+  --color-card:        rgba(26, 26, 53, 0.85);
+  --color-border:      rgba(107, 47, 160, 0.35);
+
+  /* Backgrounds */
+  --background: var(--color-navy);
+  --foreground: var(--color-soft-white);
+
+  /* Typography */
+  --font-display: var(--font-crimson);
+  --font-body:    var(--font-inter);
+}
+
+@theme inline {
+  --color-background:   var(--background);
+  --color-foreground:   var(--foreground);
+  --color-navy:         #0d0d1a;
+  --color-navy-light:   #131325;
+  --color-navy-mid:     #1a1a35;
+  --color-purple:       #6b2fa0;
+  --color-purple-light: #8b45c8;
+  --color-purple-dark:  #4e1f7a;
+  --color-gold:         #f9ca24;
+  --color-gold-light:   #fde68a;
+  --color-gold-dark:    #d4a017;
+  --color-soft-white:   #f0eef8;
+  --color-muted:        #a09dc0;
+  --font-sans:          var(--font-inter);
+  --font-display:       var(--font-crimson);
+}
+
+/* ─── Base reset ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100%;
+  background: var(--color-navy);
+  color: var(--color-soft-white);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* ─── Custom scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-navy);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-purple-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-purple);
+}
+
+/* ─── Selection ──────────────────────────────────────────── */
+::selection {
+  background: rgba(107, 47, 160, 0.45);
+  color: var(--color-soft-white);
+}
+
+/* ─── Animations ─────────────────────────────────────────── */
+
+/* Twinkling stars */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.9); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+
+/* Gentle float */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-18px); }
+}
+
+/* Slow drift */
+@keyframes drift {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33%       { transform: translateY(-10px) translateX(6px); }
+  66%       { transform: translateY(6px) translateX(-8px); }
+}
+
+/* Shimmer / glint */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Fade up on scroll */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse glow */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(107, 47, 160, 0.4); }
+  50%       { box-shadow: 0 0 40px rgba(107, 47, 160, 0.8), 0 0 80px rgba(107, 47, 160, 0.3); }
+}
+
+/* Star rotate */
+@keyframes starSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Shooting star */
+@keyframes shoot {
+  0%   { transform: translateX(-100px) translateY(0px) rotate(-30deg); opacity: 1; }
+  100% { transform: translateX(600px) translateY(200px) rotate(-30deg); opacity: 0; }
+}
+
+/* ─── Utility classes ────────────────────────────────────── */
+
+.animate-twinkle    { animation: twinkle 2s ease-in-out infinite; }
+.animate-float      { animation: float 5s ease-in-out infinite; }
+.animate-drift      { animation: drift 8s ease-in-out infinite; }
+.animate-shimmer    { animation: shimmer 3s linear infinite; }
+.animate-pulse-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
+.animate-shoot      { animation: shoot 2.5s linear infinite; }
+
+/* Shimmer text gradient */
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold-light) 0%,
+    var(--color-gold)       30%,
+    #fff                    50%,
+    var(--color-gold)       70%,
+    var(--color-gold-light) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Purple gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-purple-light), var(--color-gold));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass card surface */
+.glass {
+  background: rgba(19, 19, 37, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+
+/* Glow border on hover */
+.glow-border {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: box-shadow 0.3s ease;
+}
+.glow-border:hover {
+  box-shadow: 0 0 0 1px var(--color-purple),
+              0 0 24px rgba(107, 47, 160, 0.5);
+}
+
+/* Night-sky gradient background */
+.bg-night {
+  background: radial-gradient(ellipse at 20% 50%, rgba(107, 47, 160, 0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(107, 47, 160, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 100%, rgba(26, 26, 53, 0.8) 0%, transparent 70%),
+              linear-gradient(180deg, #0d0d1a 0%, #101022 50%, #0d0d1a 100%);
+}
+
+/* Section divider shimmer line */
+.divider-glow {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-purple), var(--color-gold), var(--color-purple), transparent);
+}
