@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, ChevronDown, User } from 'lucide-react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/icon'
 
 interface TopBarProps {
   displayName: string
@@ -23,59 +24,58 @@ export default function DashboardTopBar({ displayName }: TopBarProps) {
 
   const initials = displayName
     .split(' ')
-    .map((n) => n[0])
+    .map(n => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
 
   return (
-    <header className="h-14 border-b border-purple/20 bg-navy-light/80 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-30">
-      {/* Left — spacer for mobile hamburger */}
+    <header className="h-14 border-b border-white/20 dark:border-white/5 glass-strong flex items-center justify-between px-6 sticky top-0 z-30">
       <div className="w-8 md:hidden" />
 
-      {/* Center title — visible on mobile */}
       <div className="flex-1 flex justify-center md:justify-start">
-        <span className="md:hidden text-sm font-semibold text-soft-white">DreamTales</span>
+        <span className="md:hidden font-display font-bold text-lg text-slate-800 dark:text-white">
+          Dreamy<span className="text-dreamy">Tales</span>
+        </span>
       </div>
 
-      {/* Right — user menu */}
       <div className="relative">
         <button
-          onClick={() => setMenuOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-xl px-3 py-1.5 hover:bg-white/5 transition group"
+          onClick={() => setMenuOpen(o => !o)}
+          className="interactive flex items-center gap-2 rounded-2xl px-3 py-1.5 hover:bg-white/40 dark:hover:bg-white/5 transition"
           aria-expanded={menuOpen}
         >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blossom to-lavender flex items-center justify-center text-blossomink text-xs font-bold shrink-0">
             {initials}
           </div>
-          <span className="hidden sm:block text-sm text-soft-white max-w-[120px] truncate">{displayName}</span>
-          <ChevronDown size={14} className="text-muted group-hover:text-soft-white transition" />
+          <span className="hidden sm:block text-sm font-semibold text-slate-800 dark:text-white max-w-[120px] truncate">{displayName}</span>
+          <Icon name="chevron" className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </button>
 
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-xl border border-purple/20 bg-navy-light shadow-xl shadow-black/40 overflow-hidden">
-              <div className="px-4 py-3 border-b border-purple/20">
-                <p className="text-xs text-muted">Přihlášen jako</p>
-                <p className="text-sm font-medium text-soft-white truncate mt-0.5">{displayName}</p>
+            <div className="absolute right-0 top-full mt-2 z-20 w-52 glass-strong rounded-3xl p-2 shadow-softlg step-enter overflow-hidden">
+              <div className="px-3 py-2.5 mb-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-white truncate mt-0.5">{displayName}</p>
               </div>
-              <div className="p-1">
-                <a
+              <div className="border-t border-white/30 dark:border-white/10 pt-1">
+                <Link
                   href="/settings"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted hover:text-soft-white hover:bg-white/5 transition"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-sm text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5 transition font-semibold"
                 >
-                  <User size={15} />
-                  Nastavení účtu
-                </a>
+                  <Icon name="gear" className="w-4 h-4" />
+                  Account settings
+                </Link>
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 transition disabled:opacity-60"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition font-semibold disabled:opacity-60"
                 >
-                  <LogOut size={15} />
-                  {isLoggingOut ? 'Odhlašování...' : 'Odhlásit se'}
+                  <Icon name="arrowL" className="w-4 h-4" />
+                  {isLoggingOut ? 'Signing out…' : 'Sign out'}
                 </button>
               </div>
             </div>

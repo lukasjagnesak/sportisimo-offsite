@@ -3,102 +3,84 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, BookOpen, Settings, X, Menu } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Icon } from '@/components/ui/icon'
 
 const navItems = [
-  { href: '/dashboard', label: 'Přehled', icon: LayoutDashboard },
-  { href: '/children', label: 'Profily dětí', icon: Users },
-  { href: '/stories', label: 'Pohádky', icon: BookOpen },
-  { href: '/settings', label: 'Nastavení', icon: Settings },
+  { href: '/dashboard', label: 'Dashboard', iconName: 'bolt' as const },
+  { href: '/children', label: 'Children', iconName: 'user' as const },
+  { href: '/stories', label: 'Stories', iconName: 'book' as const },
+  { href: '/settings', label: 'Settings', iconName: 'gear' as const },
 ]
 
-export default function DashboardSidebar() {
+function NavContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  const NavContent = () => (
+  return (
     <>
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-purple/20">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-md shadow-purple-900/50 shrink-0">
-          <span className="text-lg">🌙</span>
-        </div>
-        <span className="text-white font-bold text-lg tracking-tight">DreamTales</span>
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 dark:border-white/5">
+        <span className="relative grid place-items-center w-10 h-10 rounded-2xl bg-gradient-to-br from-blossom to-lavender shadow-soft">
+          <Icon name="moon" className="w-5 h-5 text-blossomink" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+        </span>
+        <span className="font-display font-bold text-xl tracking-tight text-slate-800 dark:text-white">
+          Dreamy<span className="text-dreamy">Tales</span>
+        </span>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
+        {navItems.map(item => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-          const Icon = item.icon
           return (
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-purple/30 text-white border border-purple/40 shadow-sm shadow-purple/20'
-                  : 'text-muted hover:text-soft-white hover:bg-white/5'
-              )}
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${isActive
+                ? 'bg-blossom/60 dark:bg-stellar/15 text-blossomink dark:text-stellar border border-blossom/50 dark:border-stellar/30 shadow-soft'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
+              }`}
             >
-              <Icon className={cn('h-4.5 w-4.5 shrink-0', isActive ? 'text-violet-300' : 'text-muted')} size={18} />
+              <Icon name={item.iconName} className="w-4.5 h-4.5 shrink-0 w-[18px] h-[18px]" />
               {item.label}
             </Link>
           )
         })}
       </nav>
 
-      {/* Bottom decoration */}
-      <div className="px-4 py-4 border-t border-purple/20">
-        <div className="rounded-xl bg-gradient-to-br from-purple/20 to-violet-900/20 border border-purple/20 p-4">
-          <p className="text-xs font-semibold text-violet-300 mb-1">Tip dne</p>
-          <p className="text-xs text-muted leading-relaxed">Přidejte jméno kamaráda dítěte do profilu — pohádky budou ještě osobnější!</p>
+      <div className="px-4 py-4 border-t border-white/10 dark:border-white/5">
+        <div className="rounded-2xl p-4 bg-gradient-to-br from-blossom/40 to-lavender/30 dark:from-stellar/10 dark:to-cloud/5 border border-white/50 dark:border-white/10">
+          <p className="text-xs font-bold text-blossomink dark:text-stellar mb-1">Daily Tip</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Add your child&apos;s friend&apos;s name to make stories even more personal!</p>
         </div>
       </div>
     </>
   )
+}
+
+export default function DashboardSidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <>
-      {/* Mobile toggle button — rendered into the topbar slot via CSS */}
       <button
-        className="md:hidden fixed top-3.5 left-4 z-50 p-2 rounded-lg bg-navy-mid border border-purple/20 text-muted hover:text-white transition"
+        className="md:hidden fixed top-3.5 left-4 z-50 p-2 rounded-xl glass text-slate-700 dark:text-slate-200"
         onClick={() => setMobileOpen(true)}
-        aria-label="Otevřít menu"
+        aria-label="Open menu"
       >
-        <Menu size={20} />
+        <Icon name="plus" className="w-5 h-5 rotate-45" />
       </button>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Mobile drawer */}
-      <aside
-        className={cn(
-          'md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-navy-light border-r border-purple/20 flex flex-col transition-transform duration-300',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        <button
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Zavřít menu"
-        >
-          <X size={18} />
+      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 glass-strong flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <button className="absolute top-4 right-4 p-1.5 rounded-xl glass text-slate-600 dark:text-slate-300" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+          <Icon name="x" className="w-4 h-4" />
         </button>
-        <NavContent />
+        <NavContent onClose={() => setMobileOpen(false)} />
       </aside>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col bg-navy-light border-r border-purple/20 min-h-screen sticky top-0">
+      <aside className="hidden md:flex w-60 shrink-0 flex-col glass-strong border-r border-white/20 dark:border-white/5 min-h-screen sticky top-0">
         <NavContent />
       </aside>
     </>

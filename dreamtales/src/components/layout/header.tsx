@@ -1,140 +1,128 @@
 'use client'
 
-import * as React from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/ui/icon'
+import { useApp, REGIONS } from '@/lib/context/app-context'
+
+export function Logo({ href = '/' }: { href?: string }) {
+  return (
+    <Link href={href} className="group flex items-center gap-2.5 interactive">
+      <span className="relative grid place-items-center w-10 h-10 rounded-2xl bg-gradient-to-br from-blossom to-lavender dark:from-night dark:to-night dark:ring-1 dark:ring-white/10 shadow-soft">
+        <Icon name="moon" className="w-5 h-5 text-blossomink dark:text-stellar" />
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white dark:bg-stellar animate-pulse" />
+      </span>
+      <span className="font-display font-bold text-xl tracking-tight text-slate-800 dark:text-white">
+        Dreamy<span className="text-dreamy">Tales</span>
+      </span>
+    </Link>
+  )
+}
+
+export function ThemeToggle() {
+  const { dark, setDark } = useApp()
+  return (
+    <button
+      onClick={() => setDark(!dark)}
+      aria-label="Toggle day / night"
+      className="interactive relative w-16 h-[34px] rounded-full p-1 glass overflow-hidden"
+    >
+      <span
+        className={`absolute inset-0 transition-opacity duration-500 ${dark ? 'opacity-100' : 'opacity-0'}`}
+        style={{ background: 'linear-gradient(120deg,#1b2542,#0b0f19)' }}
+      />
+      <span
+        className={`absolute inset-0 transition-opacity duration-500 ${dark ? 'opacity-0' : 'opacity-100'}`}
+        style={{ background: 'linear-gradient(120deg,#D0E7FF,#FFD1E6)' }}
+      />
+      <span className={`relative grid place-items-center w-[26px] h-[26px] rounded-full bg-white shadow transition-transform duration-500 ${dark ? 'translate-x-[30px]' : 'translate-x-0'}`}>
+        <Icon name={dark ? 'moon' : 'sun'} className="w-3.5 h-3.5 text-slate-700" />
+      </span>
+    </button>
+  )
+}
+
+export function RegionSwitcher() {
+  const { region, setRegion } = useApp()
+  const [open, setOpen] = useState(false)
+  const cur = REGIONS.find(r => r.code === region)!
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      const target = e.target as Element
+      if (!target.closest('[data-region-switcher]')) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [])
+
+  return (
+    <div className="relative" data-region-switcher>
+      <button
+        onClick={() => setOpen(!open)}
+        className="interactive flex items-center gap-2 rounded-3xl px-3.5 py-2.5 glass text-sm font-semibold text-slate-700 dark:text-slate-200"
+      >
+        <span className="text-base leading-none">{cur.flag}</span>
+        <span className="hidden sm:inline">{cur.cur}</span>
+        <Icon name="chevron" className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 glass-strong rounded-3xl p-2 shadow-softlg z-50 step-enter">
+          {REGIONS.map(r => {
+            const active = r.code === region
+            return (
+              <button
+                key={r.code}
+                onClick={() => { setRegion(r.code); setOpen(false) }}
+                className={`w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${active ? 'bg-blossom/60 dark:bg-stellar/15 text-blossomink dark:text-stellar' : 'text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-white/5'}`}
+              >
+                <span className="text-lg leading-none">{r.flag}</span>
+                <span className="flex-1 text-left">{r.label}</span>
+                <span className="text-xs font-bold opacity-60">{r.cur}</span>
+                {active && <Icon name="check" className="w-4 h-4" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function Header() {
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [scrolled, setScrolled] = React.useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
-  React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16)
-    window.addEventListener('scroll', onScroll, { passive: true })
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 12) }
+    window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled
-          ? 'bg-navy/90 backdrop-blur-md border-b border-purple/20 shadow-lg shadow-black/30'
-          : 'bg-transparent'
-      )}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-18">
-
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 group focus-visible:outline-none"
-          >
-            <Sparkles className="h-5 w-5 text-gold group-hover:text-gold-light transition-colors" />
-            <span className="font-display text-xl font-semibold text-soft-white group-hover:text-gradient transition-all">
-              DreamTales
-            </span>
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            <NavLink href="#how-it-works">Jak to funguje</NavLink>
-            <NavLink href="#pricing">Cena</NavLink>
-            <NavLink href="/blog">Blog</NavLink>
-          </nav>
-
-          {/* Desktop auth */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/prihlasit">Přihlásit</Link>
-            </Button>
-            <Button variant="gold" size="sm" asChild>
-              <Link href="/registrace">Začít zdarma</Link>
-            </Button>
-          </div>
-
-          {/* Mobile menu toggle */}
-          <button
-            className="md:hidden p-2 rounded-lg text-muted hover:text-soft-white hover:bg-white/5 transition-colors"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Přepnout menu"
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile drawer */}
-      <div
-        className={cn(
-          'md:hidden overflow-hidden transition-all duration-300',
-          menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        )}
-      >
-        <div className="bg-navy/95 backdrop-blur-md border-t border-purple/20 px-4 py-4 flex flex-col gap-1">
-          <MobileNavLink href="#how-it-works" onClick={() => setMenuOpen(false)}>
-            Jak to funguje
-          </MobileNavLink>
-          <MobileNavLink href="#pricing" onClick={() => setMenuOpen(false)}>
-            Cena
-          </MobileNavLink>
-          <MobileNavLink href="/blog" onClick={() => setMenuOpen(false)}>
-            Blog
-          </MobileNavLink>
-          <div className="mt-3 pt-3 border-t border-purple/20 flex flex-col gap-2">
-            <Button variant="outline" size="sm" className="w-full" asChild>
-              <Link href="/prihlasit" onClick={() => setMenuOpen(false)}>
-                Přihlásit
-              </Link>
-            </Button>
-            <Button variant="gold" size="sm" className="w-full" asChild>
-              <Link href="/registrace" onClick={() => setMenuOpen(false)}>
-                Začít zdarma
-              </Link>
-            </Button>
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'py-2.5' : 'py-4'}`}>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className={`flex items-center justify-between gap-3 rounded-3xl px-3 sm:px-4 py-2.5 transition-all duration-300 ${scrolled ? 'glass-strong shadow-soft' : ''}`}>
+          <Logo />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+            <RegionSwitcher />
+            <Link
+              href="/dashboard"
+              className="interactive hidden sm:inline-flex items-center justify-center gap-2 rounded-3xl px-5 py-2.5 text-sm bg-slate-800 text-white dark:bg-white dark:text-midnight font-semibold shadow-soft"
+            >
+              <Icon name="user" className="w-4 h-4" />
+              Login / Dashboard
+            </Link>
+            <Link
+              href="/dashboard"
+              aria-label="Login"
+              className="sm:hidden interactive grid place-items-center w-11 h-11 rounded-2xl bg-slate-800 text-white dark:bg-white dark:text-midnight"
+            >
+              <Icon name="user" className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </div>
     </header>
-  )
-}
-
-function NavLink({
-  href,
-  children,
-}: {
-  href: string
-  children: React.ReactNode
-}) {
-  return (
-    <Link
-      href={href}
-      className="px-4 py-2 text-sm text-muted hover:text-soft-white rounded-lg hover:bg-white/5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/60"
-    >
-      {children}
-    </Link>
-  )
-}
-
-function MobileNavLink({
-  href,
-  children,
-  onClick,
-}: {
-  href: string
-  children: React.ReactNode
-  onClick?: () => void
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="px-4 py-3 text-sm text-soft-white/80 hover:text-soft-white rounded-lg hover:bg-white/5 transition-colors"
-    >
-      {children}
-    </Link>
   )
 }

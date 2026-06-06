@@ -1,48 +1,43 @@
 import type { Metadata } from 'next'
-import { Inter, Crimson_Text } from 'next/font/google'
+import { Fredoka, Quicksand } from 'next/font/google'
+import { AppProvider } from '@/lib/context/app-context'
 import './globals.css'
 
-const inter = Inter({
+const fredoka = Fredoka({
   subsets: ['latin', 'latin-ext'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-fredoka',
   display: 'swap',
 })
 
-const crimsonText = Crimson_Text({
+const quicksand = Quicksand({
   subsets: ['latin', 'latin-ext'],
-  weight: ['400', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-crimson',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-quicksand',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'DreamTales – Pohádky na dobrou noc pro vaše dítě',
+  title: 'DreamyTales – Personalized Bedtime Stories',
   description:
-    'DreamTales každý večer vygeneruje originální, personalizovanou pohádku speciálně pro vaše dítě. Stačí vytvořit profil, vybrat oblíbený žánr a pohádka dorazí e-mailem přesně na dobrou noc.',
+    'Turn your child into the hero of their own bedtime story. Personalized AI-generated tales delivered as a beautiful PDF booklet every evening.',
   keywords: [
-    'pohádky pro děti',
-    'pohádka na dobrou noc',
-    'personalizované pohádky',
-    'AI pohádky',
-    'pohádky e-mailem',
-    'DreamTales',
+    'bedtime stories', 'personalized stories for kids', 'AI stories',
+    'children stories', 'bedtime PDF', 'DreamyTales', 'pohádky na dobrou noc',
   ],
-  authors: [{ name: 'DreamTales' }],
-  creator: 'DreamTales',
+  authors: [{ name: 'DreamyTales' }],
+  creator: 'DreamyTales',
   openGraph: {
-    title: 'DreamTales – Pohádky na dobrou noc pro vaše dítě',
-    description:
-      'Každý večer originální pohádka speciálně pro vaše dítě – personalizovaná, krásná a doručená e-mailem.',
+    title: 'DreamyTales – Personalized Bedtime Stories',
+    description: 'Personalized AI-generated bedtime stories delivered as a beautiful PDF booklet every evening.',
     url: 'https://dreamtales.eu',
-    siteName: 'DreamTales',
-    locale: 'cs_CZ',
+    siteName: 'DreamyTales',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DreamTales – Pohádky na dobrou noc pro vaše dítě',
-    description: 'Každý večer originální AI pohádka speciálně pro vaše dítě.',
+    title: 'DreamyTales – Personalized Bedtime Stories',
+    description: 'Personalized AI-generated bedtime stories delivered as a beautiful PDF booklet every evening.',
   },
   metadataBase: new URL('https://dreamtales.eu'),
 }
@@ -54,12 +49,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="cs"
-      className={`${inter.variable} ${crimsonText.variable} h-full`}
-      data-scroll-behavior="smooth"
+      lang="en"
+      className={`${fredoka.variable} ${quicksand.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col bg-navy text-soft-white antialiased">
-        {children}
+      <body className="font-body text-slate-700 dark:text-slate-200 antialiased overflow-x-hidden">
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   )

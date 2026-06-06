@@ -20,10 +20,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     .eq('id', user.id)
     .single()
 
-  const displayName = profile?.full_name || user.email || 'Uživatel'
+  const displayName = profile?.full_name || user.email || 'User'
 
   return (
-    <div className="min-h-screen bg-[#0d0d1f] text-white flex">
+    <div className="min-h-screen bg-mist dark:bg-midnight text-slate-700 dark:text-slate-200 flex">
       <DashboardSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardTopBar displayName={displayName} />
