@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { buildStoryPrompt } from './prompts'
+import { buildStoryPrompt, buildSystemPrompt } from './prompts'
 import type { ReadingLength } from '@/types'
 
 function getClient() {
@@ -30,15 +30,7 @@ export async function generateStory(params: GenerateStoryParams): Promise<string
         content: prompt,
       },
     ],
-    system: `Jsi nejlepší autor pohádek pro děti v Česku. Píšeš originální, poutavé a vzdělávací pohádky, které rodiče čtou svým dětem před spaním. Tvoje pohádky jsou:
-- Gramaticky správné v češtině
-- Věkově vhodné (3-10 let)
-- Plné fantazie a dobrodružství
-- S jasným poučením
-- Bezpečné a pozitivní
-- Přizpůsobené konkrétnímu dítěti
-
-NIKDY nezahrnej násilí, strachy, démony nebo nevhodný obsah pro děti.`,
+    system: buildSystemPrompt(params.language ?? 'cs'),
   })
 
   const content = message.content[0]
