@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Geist } from "next/font/google"
+import Providers from "@/components/Providers"
 import "./globals.css"
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -20,7 +21,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="cs" className={geistSans.variable}>
-      <body className="bg-slate-50 min-h-screen antialiased">{children}</body>
+      <body className="bg-slate-50 min-h-screen antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }
