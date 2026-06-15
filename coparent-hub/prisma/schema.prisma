@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  role           String    @default("PARENT")
+  telegramChatId String?
+  familyId       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts   Account[]
+  sessions   Session[]
+  family     Family?         @relation(fields: [familyId], references: [id])
+  expenses   Expense[]
+  drivingFor ActivityEvent[]
+}
+
+model Family {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  members      User[]
+  children     Child[]
+  activities   Activity[]
+  schoolEvents SchoolEvent[]
+  invitations  Invitation[]
+}
+
+model Child {
+  id        String    @id @default(cuid())
+  name      String
+  birthDate DateTime?
+  color     String    @default("#6366f1")
+  familyId  String
+
+  family       Family        @relation(fields: [familyId], references: [id])
+  custodyDays  CustodyDay[]
+  expenses     Expense[]
+  activities   Activity[]
+  schoolEvents SchoolEvent[]
+}
+
+model CustodyDay {
+  id          String   @id @default(cuid())
+  date        DateTime
+  parentId    String
+  childId     String
+  isOvernight Boolean  @default(true)
+
+  child Child @relation(fields: [childId], references: [id])
+
+  @@unique([date, childId])
+}
+
+model Activity {
+  id        String  @id @default(cuid())
+  name      String
+  location  String?
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  color     String  @default("#8b5cf6")
+  familyId  String
+  childId   String
+
+  family Family          @relation(fields: [familyId], references: [id])
+  child  Child           @relation(fields: [childId], references: [id])
+  events ActivityEvent[]
+}
+
+model ActivityEvent {
+  id         String   @id @default(cuid())
+  activityId String
+  date       DateTime
+  driverId   String?
+  notes      String?
+
+  activity Activity @relation(fields: [activityId], references: [id])
+  driver   User?    @relation(fields: [driverId], references: [id])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  category    String
+  description String?
+  date        DateTime
+  receiptUrl  String?
+  paidById    String
+  childId     String?
+  familyId    String?
+  createdAt   DateTime @default(now())
+
+  paidBy User   @relation(fields: [paidById], references: [id])
+  child  Child? @relation(fields: [childId], references: [id])
+}
+
+model SchoolEvent {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  date        DateTime
+  startTime   String?
+  endTime     String?
+  type        String   @default("OTHER")
+  location    String?
+  childId     String
+  familyId    String
+
+  child  Child  @relation(fields: [childId], references: [id])
+  family Family @relation(fields: [familyId], references: [id])
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String
+  role      String   @default("PARENT")
+  token     String   @unique @default(cuid())
+  accepted  Boolean  @default(false)
+  familyId  String
+  createdAt DateTime @default(now())
+
+  family Family @relation(fields: [familyId], references: [id])
+}
