@@ -1,5 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { cache } from "react";
 import { prisma } from "./prisma";
@@ -97,6 +98,17 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     cleanerProfileId: user.cleanerProfile?.id ?? null,
   };
 });
+
+/**
+ * Pro stránky v /dashboard. Layout sice nepřihlášeného přesměruje, ale layout
+ * a stránka se renderují paralelně – bez tohohle by stránka stihla sáhnout na
+ * null dřív, než se redirect projeví.
+ */
+export async function requirePageUser(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/prihlaseni");
+  return user;
+}
 
 export class AuthError extends Error {
   constructor(

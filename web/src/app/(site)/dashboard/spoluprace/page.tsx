@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { listMatches } from "@/lib/queries/matches";
 import { Avatar, Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatDate, pluralCz } from "@/lib/format";
@@ -9,7 +9,7 @@ export const metadata = { title: "Spolupráce" };
 export const dynamic = "force-dynamic";
 
 export default async function MatchesPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   const matches = await listMatches(user);
   const isCleaner = user.role === "CLEANER";
 

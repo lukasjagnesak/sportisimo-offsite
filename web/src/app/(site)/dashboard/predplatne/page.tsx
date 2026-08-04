@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveSubscription } from "@/lib/subscription";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
@@ -11,7 +11,7 @@ export const metadata = { title: "Předplatné" };
 export const dynamic = "force-dynamic";
 
 export default async function SubscriptionPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   const plan = user.role === "CLEANER" ? PLANS.CLEANER_PRO : PLANS.CLIENT_BASIC;
 
   const [subscription, methodCount] = await Promise.all([

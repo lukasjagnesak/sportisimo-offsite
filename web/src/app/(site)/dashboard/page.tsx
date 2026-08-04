@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveSubscription } from "@/lib/subscription";
 import { Alert, Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
@@ -17,7 +17,7 @@ export const metadata = { title: "Přehled" };
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   const isCleaner = user.role === "CLEANER";
 
   const [notifications, subscription, upcoming, stats] = await Promise.all([

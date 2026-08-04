@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatCzk, pluralCz, timeAgo } from "@/lib/format";
@@ -17,7 +17,7 @@ export const metadata = { title: "Moje poptávky" };
 export const dynamic = "force-dynamic";
 
 export default async function MyJobsPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   if (user.role !== "CLIENT") redirect("/dashboard");
 
   const jobs = await prisma.jobRequest.findMany({

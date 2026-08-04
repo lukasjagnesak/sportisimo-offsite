@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatCzk, formatDate } from "@/lib/format";
@@ -14,7 +14,7 @@ export const metadata = { title: "Platby" };
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
 
   const [methods, payments] = await Promise.all([
     prisma.paymentMethod.findMany({

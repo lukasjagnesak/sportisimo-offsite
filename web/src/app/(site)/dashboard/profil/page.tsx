@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Alert, PageHeader } from "@/components/ui";
 import { ClientProfileForm } from "./client-form";
@@ -12,7 +12,7 @@ export default async function ProfilePage({
 }: {
   searchParams: Promise<{ vitejte?: string }>;
 }) {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   const { vitejte } = await searchParams;
 
   if (user.role === "CLEANER") {

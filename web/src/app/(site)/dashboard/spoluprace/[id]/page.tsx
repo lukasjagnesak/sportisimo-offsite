@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { getMatchDetail } from "@/lib/queries/matches";
 import { hasActiveSubscription } from "@/lib/subscription";
 import { addDays, getFreeSlots } from "@/lib/availability";
@@ -29,10 +29,10 @@ export default async function MatchDetailPage({
   const [{ id }, { propojeno }, user] = await Promise.all([
     params,
     searchParams,
-    getCurrentUser(),
+    requirePageUser(),
   ]);
 
-  const detail = await getMatchDetail(id, user!);
+  const detail = await getMatchDetail(id, user);
   if (!detail) notFound();
 
   const { match, client, cleaner, isClient } = detail;
@@ -40,7 +40,7 @@ export default async function MatchDetailPage({
 
   // Sloty načítáme jen klientovi – uklízečka si kalendář spravuje jinde.
   const [subscribed, slots] = await Promise.all([
-    isClient ? hasActiveSubscription(user!.id) : Promise.resolve(true),
+    isClient ? hasActiveSubscription(user.id) : Promise.resolve(true),
     isClient
       ? getFreeSlots(match.cleanerId, new Date(), addDays(new Date(), 21), 120)
       : Promise.resolve([]),
@@ -73,7 +73,7 @@ export default async function MatchDetailPage({
           <Chat
             conversationId={match.conversation!.id}
             messages={match.conversation!.messages}
-            currentUserId={user!.id}
+            currentUserId={user.id}
           />
 
           <Card className="p-6">

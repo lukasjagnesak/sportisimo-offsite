@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatCzk, formatDate, formatTime } from "@/lib/format";
@@ -26,7 +26,7 @@ function statusTone(status: string) {
 }
 
 export default async function BookingsPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   const isCleaner = user.role === "CLEANER";
 
   const bookings = await prisma.booking.findMany({

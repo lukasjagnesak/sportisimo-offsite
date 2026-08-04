@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { requirePageUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, PageHeader } from "@/components/ui";
 import { addDays, getFreeSlots } from "@/lib/availability";
@@ -11,7 +11,7 @@ export const metadata = { title: "Kalendář dostupnosti" };
 export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
-  const user = (await getCurrentUser())!;
+  const user = await requirePageUser();
   if (user.role !== "CLEANER" || !user.cleanerProfileId) redirect("/dashboard");
 
   const [availability, exceptions, slots] = await Promise.all([
