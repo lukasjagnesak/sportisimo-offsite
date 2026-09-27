@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "cd kytara && npm ci",
+  "buildCommand": "cd kytara && npm run build",
+  "outputDirectory": "kytara/dist",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [{ "key": "Permissions-Policy", "value": "microphone=(self), display-capture=(self), autoplay=(self)" }]
+    }
+  ]
+}
