@@ -22,7 +22,7 @@ const PATH: Step[] = [
   { id: 'rhythm', title: 'Rytmus: D – D U – U D U', text: 'Pravá ruka se pořád hýbe nahoru a dolů jako kyvadlo; na „pauzách“ jen mine struny.', chords: ['D7'], songs: ['holka-modrooka', 'saints'] },
   { id: 'sevenths', title: 'Septakordy a blues', text: 'A7, D7, E7 – zvuk blues a rock’n’rollu.', chords: ['E7', 'B7'], songs: ['blues-a'] },
   { id: 'fingerpicking', title: 'Rozklad prsty a 3/4 takt', text: 'Palec hraje bas (B), ukazováček, prostředníček a prsteníček struny 3, 2, 1. Aplikace ukazuje pořadí strun na hmatníku.', chords: ['Dm'], songs: ['amazing-grace', 'scarborough-fair'] },
-  { id: 'rising', title: 'Rozklad v 6/8', text: 'Klasika House of the Rising Sun – rozklad B 3 2 1 2 3.', songs: ['rising-sun'] },
+  { id: 'rising', title: 'Rozklad v 6/8', text: 'Kometa a House of the Rising Sun – rozklad B 3 2 1 2 3 (palec, i, m, a, m, i).', chords: ['E7', 'G7'], songs: ['kometa', 'rising-sun'] },
   { id: 'barre', title: 'Barré: F a Bm', text: 'Ukazováček přitiskne všechny struny. Začni Fmaj7 a malým F (xx3211), plné barré přijde časem.', chords: ['Fmaj7', 'F', 'Bm'], songs: ['kruh-c'] },
   { id: 'own', title: 'Tvoje oblíbená písnička', text: 'Vlož odkaz na YouTube – aplikace rozpozná akordy a můžeš hrát s videem, klidně zpomaleně.', links: [{ to: '/rozpoznat', label: 'Rozpoznat z YouTube' }] },
 ];

@@ -20,7 +20,7 @@ interface YTNamespace {
       width?: string | number;
       height?: string | number;
       playerVars?: Record<string, string | number>;
-      events?: { onReady?: () => void; onStateChange?: (e: { data: number }) => void };
+      events?: { onReady?: () => void; onStateChange?: (e: { data: number }) => void; onError?: (e: { data: number }) => void };
     },
   ) => YTPlayer;
   PlayerState: { ENDED: number; PLAYING: number; PAUSED: number };

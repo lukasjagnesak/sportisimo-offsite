@@ -41,3 +41,22 @@ describe('voicings', () => {
     expect(getVoicings(parseChord('C')!)[0].frets).toEqual([-1, 3, 2, 0, 1, 0]);
   });
 });
+
+import { BUILTIN_SONGS } from './library';
+import { songEvents } from './song';
+
+describe('builtin songs', () => {
+  it('Kometa is present with a full 6/8 chord chart', () => {
+    const k = BUILTIN_SONGS.find((s) => s.id === 'kometa')!;
+    expect(k.beatsPerBar).toBe(6);
+    expect(k.patternId).toBe('arp68');
+    const ev = songEvents(k);
+    expect(new Set(ev.map((e) => e.chord))).toEqual(new Set(['Am', 'Dm', 'G7', 'C', 'E7']));
+    // Každý takt má 6 dob.
+    const total = ev.at(-1)!.startBeat + ev.at(-1)!.beats;
+    expect(total % 6).toBe(0);
+  });
+  it('every builtin song chord has a voicing', () => {
+    for (const s of BUILTIN_SONGS) for (const e of songEvents(s)) expect(getVoicing(e.chord), `${s.id}: ${e.chord}`).toBeTruthy();
+  });
+});
