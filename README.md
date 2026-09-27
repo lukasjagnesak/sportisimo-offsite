@@ -24,7 +24,6 @@ Webová aplikace (React + TypeScript + Vite), která běží celá v prohlíže�
 ## Spuštění
 
 ```bash
-cd kytara
 npm install
 npm run dev      # vývojový server
 npm test         # testy (teorie, rozpoznávání akordů, analýza nahrávky)
@@ -32,6 +31,11 @@ npm run build    # produkční build do dist/
 ```
 
 Mikrofon a sdílení zvuku vyžadují HTTPS (nebo `localhost`).
+
+## Nasazení na Vercel
+
+Na [vercel.com/new](https://vercel.com/new) importuj tento repozitář a klikni na **Deploy** – Vercel sám pozná Vite,
+nic dalšího se nenastavuje. `vercel.json` jen povoluje mikrofon a sdílení zvuku karty.
 
 ## Jak funguje rozpoznávání
 
