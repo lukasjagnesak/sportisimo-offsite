@@ -4,10 +4,8 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Permissions-Policy",
-          "value": "microphone=(self), display-capture=(self), autoplay=(self)"
-        }
+        { "key": "Permissions-Policy", "value": "microphone=(self), display-capture=(self)" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
   ]

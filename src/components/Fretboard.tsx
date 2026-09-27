@@ -1,5 +1,6 @@
 import type { Voicing } from '../music/chords';
 import { midiNoteName, noteName, STANDARD_TUNING } from '../music/notes';
+import type { RightFinger } from '../music/patterns';
 import { useStore } from '../store';
 
 interface Props {
@@ -13,6 +14,10 @@ interface Props {
   frets?: number;
   /** Zobrazit poznámky s názvy tónů u prstů. */
   showNotes?: boolean;
+  /** Prst pravé ruky pro každou drnkanou strunu (p, i, m, a). */
+  rightFingers?: Map<number, RightFinger>;
+  /** Mění se s každým krokem vzoru – restartuje animaci drnknutí. */
+  pulseKey?: number;
   /** Kliknutí na strunu/pražec (pro přehrání tónu). */
   onPick?: (string: number, fret: number) => void;
 }
@@ -20,17 +25,18 @@ interface Props {
 const INLAYS = [3, 5, 7, 9, 15, 17];
 
 /** Vodorovný hmatník celé kytary s vyznačeným prstokladem. Nahoře 1. struna (e), dole 6. (E) – jako v tabulatuře. */
-export function Fretboard({ voicing, capo = 0, active = [], order, frets: fretsProp, showNotes, onPick }: Props) {
+export function Fretboard({ voicing, capo = 0, active = [], order, rightFingers, pulseKey, frets: fretsProp, showNotes, onPick }: Props) {
   const { leftHanded, notation, showNoteNames } = useStore((s) => s.settings);
   // Na úzkém displeji stačí méně pražců (větší body), pokud je prstoklad nepotřebuje.
   const needed = voicing ? Math.max(0, ...voicing.frets) + capo + 1 : 0;
   const narrow = typeof window !== 'undefined' && window.innerWidth < 720;
-  const frets = fretsProp ?? Math.max(narrow ? 7 : 12, needed);
+  const frets = fretsProp ?? Math.max(narrow ? 5 : 12, needed);
   const notes = showNotes ?? showNoteNames;
-  const W = 1000;
   const H = 220;
   const left = 92;
   const right = order && order.size ? 130 : 30;
+  // Šířka podle počtu pražců – na mobilu (méně pražců) vyjde hmatník větší.
+  const W = left + right + frets * (narrow ? 88 : 72);
   const top = 26;
   const bottom = 22;
   const boardW = W - left - right;
@@ -155,14 +161,37 @@ export function Fretboard({ voicing, capo = 0, active = [], order, frets: fretsP
             </g>
           );
         })}
+      {voicing &&
+        pulseKey !== undefined &&
+        active.map((s) => {
+          const f = played[s];
+          if (f === undefined || f < 0) return null;
+          const x = voicing.frets[s] === 0 ? (capo > 0 ? midX(capo) + (leftHanded ? -22 : 22) : midX(0)) : midX(f);
+          const finger = rightFingers?.get(s);
+          return (
+            <g key={`pulse-${pulseKey}-${s}`} className={`fb-pulse-g ${finger ? 'f-' + finger : ''}`}>
+              <circle cx={x} cy={sy(s)} r={14} className="fb-pulse" />
+              {finger && (
+                <text x={x} y={sy(s) - 20} textAnchor="middle" className="fb-pulse-finger">
+                  {finger}
+                </text>
+              )}
+            </g>
+          );
+        })}
       {order &&
         [...order.entries()].map(([s, steps]) => (
           <g key={`o${s}`}>
-            {steps.slice(0, 6).map((n, k) => {
-              const x = leftHanded ? right - 16 - k * 21 : W - right + 16 + k * 21;
+            {rightFingers?.get(s) && (
+              <text x={leftHanded ? right - 14 : W - right + 14} y={sy(s) + 5} textAnchor="middle" className={`fb-rf f-${rightFingers.get(s)}`}>
+                {rightFingers.get(s)}
+              </text>
+            )}
+            {steps.slice(0, 5).map((n, k) => {
+              const x = leftHanded ? right - 37 - k * 21 : W - right + 37 + k * 21;
               return (
                 <g key={k}>
-                  <circle cx={x} cy={sy(s)} r={9.5} className="fb-order" />
+                  <circle cx={x} cy={sy(s)} r={9.5} className={`fb-order ${rightFingers?.get(s) ? 'f-' + rightFingers.get(s) : ''}`} />
                   <text x={x} y={sy(s) + 4} textAnchor="middle" className="fb-order-num">
                     {n}
                   </text>

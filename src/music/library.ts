@@ -123,6 +123,47 @@ was [Em:3]blind, but [D:3]now I [G:6]see.`,
 re[Am:3]member [C:3]me to one who [G:3]lives [G:3]there,
 [Am:3]she once was a [G:3]true love of [Am:6]mine.`,
 
+  kometa: `{title: Kometa}
+{artist: Jaromír Nohavica}
+{bpm: 170}
+{time: 6/8}
+{key: Am}
+{level: 2}
+{pattern: arp68}
+{note: Celá píseň je v 6/8 a hraje se rozkladem: palec (p) bas, pak i–m–a–m–i na 3., 2., 1., 2. a 3. strunu. Každý akord trvá jeden takt (6 osmin), v refrénu se C a E7 dělí o takt. Nejdřív zpomal tempo na 50–60 % a klikni na „Předvést vybrnkávání“. Text písně je chráněný autorskými právy, proto tu jsou jen akordy – přes „Upravit kopii“ si ho můžeš dopsat ze svého zpěvníku.}
+{c: Předehra}
+| Am | Dm | E7 | Am |
+{c: Sloka 1}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{c: Sloka 2}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{soc: Refrén}
+| Am | Dm | G7 | C:3 E7:3 |
+| Am | Dm | E7 | Am |
+{eoc}
+{c: Sloka 3}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{c: Sloka 4}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{soc: Refrén}
+| Am | Dm | G7 | C:3 E7:3 |
+| Am | Dm | E7 | Am |
+{eoc}
+{c: Sloka 5}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{c: Sloka 6}
+| Am | Am | Am | Am |
+| Dm | G7 | C | E7 |
+{soc: Refrén}
+| Am | Dm | G7 | C:3 E7:3 |
+| Am | Dm | E7 | Am |
+{eoc}`,
+
   'rising-sun': `{title: The House of the Rising Sun}
 {artist: Tradicionál}
 {bpm: 110}

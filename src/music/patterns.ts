@@ -131,3 +131,31 @@ export function countLabel(stepIndex: number, stepsPerBeat: number): string {
   if (stepsPerBeat === 2) return 'a';
   return ['', 'e', 'a', 'e'][sub] ?? '·';
 }
+
+export type RightFinger = 'p' | 'i' | 'm' | 'a';
+
+export const RIGHT_FINGER_NAMES: Record<RightFinger, string> = {
+  p: 'palec',
+  i: 'ukazováček',
+  m: 'prostředníček',
+  a: 'prsteníček',
+};
+
+/** Klasické přiřazení prstů pravé ruky: palec basy, i–m–a struny 3–2–1. */
+export function pickFinger(s: PickString): RightFinger {
+  if (s === 'B' || s === 'A' || s >= 4) return 'p';
+  return s === 3 ? 'i' : s === 2 ? 'm' : 'a';
+}
+
+/** Pro každou strunu, kterou vzor drnká, prst pravé ruky. */
+export function patternFingers(pattern: Pattern, v: Voicing, chord: Chord): Map<number, RightFinger> {
+  const m = new Map<number, RightFinger>();
+  for (const st of pattern.steps) {
+    if (st.kind !== 'pick') continue;
+    for (const s of st.strings) {
+      const idx = s === 'B' ? bassString(v) : s === 'A' ? altBassString(v, chord) : 6 - s;
+      if (idx >= 0 && v.frets[idx] >= 0 && !m.has(idx)) m.set(idx, pickFinger(s));
+    }
+  }
+  return m;
+}

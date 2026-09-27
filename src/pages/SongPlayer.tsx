@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { strumChord } from '../audio/engine';
+import { audioContext, playStrings, strumChord } from '../audio/engine';
 import { eventIndexAt, SongScheduler } from '../audio/scheduler';
 import { ChordDiagram } from '../components/ChordDiagram';
 import { ChordChip, ChromaBars, LevelMeter, MicButton, Stepper, Toggle, useChordLabel, useNoteLabel } from '../components/common';
@@ -8,11 +8,11 @@ import { PatternView } from '../components/PatternView';
 import { useChordListener, useLiveInput, usePersistentState } from '../hooks';
 import { chordPitchClasses, getVoicing, parseChord, transposeName } from '../music/chords';
 import { mod12 } from '../music/notes';
-import { defaultPatternFor, patternById, PATTERNS, stepStrings } from '../music/patterns';
+import { defaultPatternFor, patternById, patternFingers, PATTERNS, RIGHT_FINGER_NAMES, stepStrings, type RightFinger } from '../music/patterns';
 import { songChords, songEvents, type Song } from '../music/song';
 import { href, navigate } from '../router';
 import { useSong } from '../songs';
-import { addPracticeMinutes, recordChordHit, recordSongPlay, useStore } from '../store';
+import { addPracticeMinutes, recordChordHit, recordSongPlay, saveSong, useStore } from '../store';
 
 type Mode = 'play' | 'wait' | 'score';
 
@@ -78,8 +78,43 @@ function SongPlayer({ song }: { song: Song }) {
   const curVoicing = curShape ? getVoicing(curShape) : null;
   const curChord = curShape ? parseChord(curShape) : null;
   const beatInBar = pos >= 0 ? ((pos % song.beatsPerBar) + song.beatsPerBar) % song.beatsPerBar : -1;
-  const stepIndex = playing && pos >= 0 ? Math.floor(beatInBar * pattern.stepsPerBeat) % pattern.steps.length : -1;
+  const [demoStep, setDemoStep] = useState(-1);
+  const stepIndex = playing && pos >= 0 ? Math.floor(beatInBar * pattern.stepsPerBeat) % pattern.steps.length : demoStep;
+  // Počítadlo kroků pro restart animace drnknutí.
+  const stepCounter = playing && pos >= 0 ? Math.floor(pos * pattern.stepsPerBeat) : demoStep;
   const activeStrings = stepIndex >= 0 && curVoicing && curChord ? stepStrings(pattern.steps[stepIndex], curVoicing, curChord) : [];
+
+  const rightFingers = useMemo(
+    () => (pattern.type === 'pick' && curVoicing && curChord ? patternFingers(pattern, curVoicing, curChord) : undefined),
+    [pattern, curVoicing, curChord],
+  );
+
+  // Předvedení vzoru na aktuálním akordu: dvakrát pomalu projde celý takt se zvukem.
+  const demoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stopDemo = useCallback(() => {
+    if (demoTimer.current) clearInterval(demoTimer.current);
+    demoTimer.current = null;
+    setDemoStep(-1);
+  }, []);
+  const startDemo = () => {
+    if (!curVoicing || !curChord) return;
+    stopDemo();
+    audioContext();
+    const stepMs = (60000 / Math.min(bpm, 90)) / pattern.stepsPerBeat * 1.4;
+    let i = 0;
+    const total = pattern.steps.length * 2;
+    const tick = () => {
+      if (i >= total) return stopDemo();
+      const k = i % pattern.steps.length;
+      const st = pattern.steps[k];
+      if (st.kind !== 'rest') playStrings(curVoicing, stepStrings(st, curVoicing, curChord), { capo, spread: st.kind === 'pick' ? 0 : 0.02, gain: 0.3, mute: st.kind === 'chuck' });
+      setDemoStep(k);
+      i++;
+    };
+    tick();
+    demoTimer.current = setInterval(tick, stepMs);
+  };
+  useEffect(() => stopDemo, [stopDemo]);
 
   // Pořadí drnkání strun (pro vzory s prsty).
   const order = useMemo(() => {
@@ -115,6 +150,7 @@ function SongPlayer({ song }: { song: Song }) {
   const play = useCallback(
     (fromBeat?: number) => {
       sched.current?.stop();
+      stopDemo();
       const s = new SongScheduler(cfg);
       s.onEnd = () => {
         stop();
@@ -132,7 +168,7 @@ function SongPlayer({ song }: { song: Song }) {
       if (fromBeat === undefined && start === 0) setScores({});
       setPlaying(true);
     },
-    [cfg, pos, totalBeats, loop, stop, song.id, mode],
+    [cfg, pos, totalBeats, loop, stop, stopDemo, song.id, mode],
   );
 
   useEffect(() => () => sched.current?.stop(), []);
@@ -267,10 +303,22 @@ function SongPlayer({ song }: { song: Song }) {
             {capo > 0 && <span className="pill">Kapodastr {capo}. pražec</span>}
           </div>
         </div>
-        {!song.builtin && (
+        {!song.builtin ? (
           <a className="btn ghost" href={href(`/editor/${song.id}`)}>
             Upravit
           </a>
+        ) : (
+          <button
+            className="btn ghost"
+            title="Vytvoří vlastní kopii, do které si můžeš dopsat text nebo změnit akordy"
+            onClick={() => {
+              const id = `${song.id}-${Date.now().toString(36).slice(-4)}`;
+              saveSong(id, song.source);
+              navigate(`/editor/${id}`);
+            }}
+          >
+            Upravit kopii
+          </button>
         )}
       </header>
 
@@ -342,7 +390,27 @@ function SongPlayer({ song }: { song: Song }) {
           )}
         </div>
         <div className="board-card">
-          <Fretboard voicing={curVoicing} capo={capo} active={activeStrings} order={order} />
+          <Fretboard voicing={curVoicing} capo={capo} active={activeStrings} order={order} rightFingers={rightFingers} pulseKey={stepIndex >= 0 ? stepCounter : undefined} />
+          <div className="row between wrap gap board-tools">
+            {rightFingers && rightFingers.size > 0 ? (
+              <div className="rf-legend">
+                Pravá ruka:{' '}
+                {(['p', 'i', 'm', 'a'] as RightFinger[]).map((f) => (
+                  <span key={f} className={`rf-chip f-${f}`}>
+                    <b>{f}</b> {RIGHT_FINGER_NAMES[f]}
+                  </span>
+                ))}
+                <span className="muted small"> · čísla u strun = pořadí drnknutí</span>
+              </div>
+            ) : (
+              <span className="muted small">↓ úhoz dolů (od basů), ↑ úhoz nahoru. Zvýrazněné struny právě znějí.</span>
+            )}
+            {!playing && (
+              <button className="btn small" onClick={() => (demoStep >= 0 ? stopDemo() : startDemo())}>
+                {demoStep >= 0 ? '■ Stop' : pattern.type === 'pick' ? '▶ Předvést vybrnkávání' : '▶ Předvést rytmus'}
+              </button>
+            )}
+          </div>
           <PatternView pattern={pattern} current={stepIndex} voicing={curVoicing} chord={curChord} />
           {mode !== 'play' && mic.state === 'on' && <ChromaBars chroma={listen.frame?.chroma ?? null} expected={expectedPcs} missing={listen.loud ? listen.check?.missing : []} />}
         </div>

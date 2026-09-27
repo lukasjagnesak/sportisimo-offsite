@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { analysisToChordPro, type AnalysisResult } from '../audio/analyze';
-import { analyzeInWorker, decodeToAnalysisRate, getMicrophone, getTabAudio, LiveInput } from '../audio/engine';
+import { analyzeInWorker, audioContext, decodeToAnalysisRate, getMicrophone, getTabAudio, LiveInput } from '../audio/engine';
 import { ChordDiagram } from '../components/ChordDiagram';
 import { ChordChip, Stepper, useChordLabel } from '../components/common';
 import { Fretboard } from '../components/Fretboard';
@@ -67,7 +67,13 @@ export function RecognizePage() {
       </label>
 
       {tab === 'file' && <FileInput onFile={(buf, f) => void runAnalysis(buf, { kind: 'file', url: URL.createObjectURL(new Blob([buf], { type: f.type })), name: f.name }, f.name.replace(/\.[^.]+$/, ''))} />}
-      {tab === 'youtube' && <YouTubeCapture onRecorded={(buf, id, offset) => void runAnalysis(buf, { kind: 'youtube', id, offset }, 'Píseň z YouTube')} activeSource={source?.kind === 'youtube' ? source : null} />}
+      {tab === 'youtube' && (
+        <YouTubeCapture
+          onRecorded={(buf, id, offset) => void runAnalysis(buf, { kind: 'youtube', id, offset }, 'Píseň z YouTube')}
+          onRecordedTab={(buf, url) => void runAnalysis(buf, { kind: 'recording', url }, 'Píseň z YouTube')}
+          activeSource={source?.kind === 'youtube' ? source : null}
+        />
+      )}
       {tab === 'record' && <Recorder getStream={getMicrophone} label="Nahrát z mikrofonu" onRecorded={(buf, url) => void runAnalysis(buf, { kind: 'recording', url }, 'Nahrávka')} />}
 
       {progress && (
@@ -138,8 +144,11 @@ function Recorder({ getStream, label, onRecorded, onStart, onStop, autoStopRef }
 
   const start = async () => {
     setError(null);
+    // AudioContext musí vzniknout přímo v kliknutí, jinak ho prohlížeč nechá uspaný.
+    audioContext();
     try {
       const stream = await getStream();
+      const startedAt = Date.now();
       const audioOnly = new MediaStream(stream.getAudioTracks());
       const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find((m) => MediaRecorder.isTypeSupported(m));
       const r = new MediaRecorder(audioOnly, mime ? { mimeType: mime } : undefined);
@@ -151,6 +160,10 @@ function Recorder({ getStream, label, onRecorded, onStart, onStop, autoStopRef }
         setLive(null);
         setRec(null);
         onStop?.();
+        if (Date.now() - startedAt < 4000) {
+          setError('Nahrávání skončilo hned po spuštění – sdílení zvuku se přerušilo. Zkus to znovu a nech sdílení zapnuté, dokud píseň nedohraje.');
+          return;
+        }
         const blob = new Blob(chunks, { type: r.mimeType });
         onRecorded(await blob.arrayBuffer(), URL.createObjectURL(blob));
       };
@@ -189,12 +202,21 @@ function Recorder({ getStream, label, onRecorded, onStart, onStop, autoStopRef }
   );
 }
 
-function YouTubeCapture({ onRecorded, activeSource }: { onRecorded: (buf: ArrayBuffer, id: string, offset: number) => void; activeSource: { id: string } | null }) {
+const EMBED_ERRORS: Record<number, string> = {
+  2: 'Neplatný odkaz na video.',
+  5: 'Video nejde přehrát v tomto přehrávači.',
+  100: 'Video neexistuje nebo je soukromé.',
+  101: 'Autor videa nepovolil přehrávání mimo YouTube. Použij postup A (video v nové kartě).',
+  150: 'Autor videa nepovolil přehrávání mimo YouTube. Použij postup A (video v nové kartě).',
+  153: 'YouTube odmítl přehrát video mimo svůj web. Použij postup A (video v nové kartě).',
+};
+
+function YouTubeCapture({ onRecorded, onRecordedTab, activeSource }: { onRecorded: (buf: ArrayBuffer, id: string, offset: number) => void; onRecordedTab: (buf: ArrayBuffer, url: string) => void; activeSource: { id: string } | null }) {
   const [url, setUrl] = useState('');
   const [id, setId] = useState<string | null>(activeSource?.id ?? null);
+  const [embedError, setEmbedError] = useState<string | null>(null);
   const holder = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
-  const offset = useRef(0);
   const stopRef = useRef<(() => void) | null>(null);
   const supported = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia;
   const isResultPlayer = activeSource?.id === id;
@@ -202,23 +224,27 @@ function YouTubeCapture({ onRecorded, activeSource }: { onRecorded: (buf: ArrayB
   useEffect(() => {
     if (!id || !holder.current || isResultPlayer) return;
     let cancelled = false;
+    setEmbedError(null);
     const el = document.createElement('div');
     holder.current.innerHTML = '';
     holder.current.appendChild(el);
-    void loadYouTubeApi().then((YT) => {
-      if (cancelled) return;
-      player.current = new YT.Player(el, {
-        videoId: id,
-        width: '100%',
-        height: '100%',
-        playerVars: { rel: 0, playsinline: 1 },
-        events: {
-          onStateChange: (e) => {
-            if (e.data === YT.PlayerState.ENDED) stopRef.current?.();
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled) return;
+        player.current = new YT.Player(el, {
+          videoId: id,
+          width: '100%',
+          height: '100%',
+          playerVars: { rel: 0, playsinline: 1, origin: window.location.origin },
+          events: {
+            onStateChange: (e) => {
+              if (e.data === YT.PlayerState.ENDED) stopRef.current?.();
+            },
+            onError: (e) => setEmbedError(EMBED_ERRORS[e.data] ?? `Přehrávač YouTube hlásí chybu ${e.data}. Použij postup A (video v nové kartě).`),
           },
-        },
-      });
-    });
+        });
+      })
+      .catch((e: Error) => setEmbedError(e.message));
     return () => {
       cancelled = true;
       player.current?.destroy();
@@ -226,53 +252,72 @@ function YouTubeCapture({ onRecorded, activeSource }: { onRecorded: (buf: ArrayB
     };
   }, [id, isResultPlayer]);
 
+  const watchUrl = id ? `https://www.youtube.com/watch?v=${id}` : null;
+
   return (
     <div className="card">
       <form
         className="row gap"
         onSubmit={(e) => {
           e.preventDefault();
-          const v = youtubeId(url);
-          setId(v);
+          setId(youtubeId(url));
         }}
       >
-        <input className="grow" placeholder="Vlož odkaz na YouTube video…" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <input id="yt-url" className="grow" placeholder="Vlož odkaz na YouTube video…" value={url} onChange={(e) => setUrl(e.target.value)} />
         <button className="btn" type="submit">
           Načíst
         </button>
       </form>
       {url && !youtubeId(url) && <p className="error small">Tohle nevypadá jako odkaz na YouTube.</p>}
-      {id && !isResultPlayer && (
-        <>
-          <div className="yt-wrap" ref={holder} />
-          <ol className="steps small">
-            <li>Klikni na „Poslouchat tuto kartu“ a v okně prohlížeče vyber <b>tuto kartu</b> a zaškrtni <b>sdílet zvuk</b>.</li>
-            <li>Video se spustí od začátku. Nech ho dohrát (nebo zastav ručně) – pak se spustí analýza.</li>
-            <li>Potom uvidíš akordy synchronně s videem a můžeš hrát s ním.</li>
-          </ol>
-          {supported ? (
-            <Recorder
-              getStream={getTabAudio}
-              label="Poslouchat tuto kartu"
-              autoStopRef={stopRef}
-              onStart={() => {
-                const p = player.current;
-                if (p) {
-                  p.seekTo(0, true);
-                  p.playVideo();
-                }
-                offset.current = 0;
-              }}
-              onStop={() => player.current?.pauseVideo()}
-              onRecorded={(buf) => onRecorded(buf, id, offset.current)}
-            />
-          ) : (
-            <p className="error">Tento prohlížeč neumí zachytit zvuk z karty. Použij Chrome nebo Edge na počítači, případně si zvuk ulož jako soubor.</p>
-          )}
-        </>
+      {!supported && <p className="error">Tento prohlížeč neumí zachytit zvuk z karty. Použij Chrome nebo Edge na počítači (na mobilu to nejde), případně nahraj píseň jako soubor nebo mikrofonem.</p>}
+      {id && watchUrl && !isResultPlayer && supported && (
+        <div className="yt-options">
+          <section className="yt-option">
+            <h3>A) Video v nové kartě – funguje vždy</h3>
+            <ol className="steps small">
+              <li>
+                <a href={watchUrl} target="_blank" rel="noreferrer">
+                  Otevři video na YouTube ↗
+                </a>{' '}
+                a nech ho zatím zastavené na začátku (reklamu přeskoč).
+              </li>
+              <li>Vrať se sem a klikni na „Poslouchat kartu s videem“.</li>
+              <li>
+                V okně Chromu vyber nahoře <b>Karta Chromu</b>, klikni na kartu s videem a zapni <b>Sdílet i zvuk karty</b> → Sdílet.
+              </li>
+              <li>Chrome tě přepne na video – pusť ho. Po dohrání se vrať sem a klikni na „Zastavit a analyzovat“.</li>
+            </ol>
+            <Recorder getStream={() => getTabAudio(false)} label="Poslouchat kartu s videem" onRecorded={onRecordedTab} />
+          </section>
+          <section className="yt-option">
+            <h3>B) Přehrát video tady</h3>
+            <div className="yt-wrap" ref={holder} />
+            {embedError ? (
+              <p className="error small">{embedError}</p>
+            ) : (
+              <>
+                <p className="muted small">Při sdílení vyber <b>tuto kartu</b> a zapni sdílení zvuku. Video se pak spustí samo od začátku.</p>
+                <Recorder
+                  getStream={() => getTabAudio(true)}
+                  label="Poslouchat tuto kartu"
+                  autoStopRef={stopRef}
+                  onStart={() => {
+                    const p = player.current;
+                    if (p) {
+                      p.seekTo(0, true);
+                      p.playVideo();
+                    }
+                  }}
+                  onStop={() => player.current?.pauseVideo()}
+                  onRecorded={(buf) => onRecorded(buf, id, 0)}
+                />
+              </>
+            )}
+          </section>
+        </div>
       )}
       <p className="muted small">
-        YouTube nedovoluje stáhnout zvuk přímo, proto aplikace poslouchá zvuk karty, zatímco video hraje (jen ve tvém prohlížeči). Analýza tedy trvá tak dlouho jako skladba.
+        YouTube nedovoluje stáhnout zvuk přímo, proto aplikace poslouchá zvuk karty, zatímco video hraje (vše jen ve tvém prohlížeči). Analýza tedy trvá tak dlouho jako skladba.
       </p>
     </div>
   );

@@ -678,6 +678,104 @@ textarea.code {
   stroke: var(--accent);
   stroke-width: 1.5;
 }
+:root {
+  --f-p: #f0a64a;
+  --f-i: #5bb8ff;
+  --f-m: #5fd08a;
+  --f-a: #e98bd8;
+}
+.fb-order.f-p,
+.fb-pulse-g.f-p {
+  --fc: var(--f-p);
+}
+.fb-order.f-i,
+.fb-pulse-g.f-i {
+  --fc: var(--f-i);
+}
+.fb-order.f-m,
+.fb-pulse-g.f-m {
+  --fc: var(--f-m);
+}
+.fb-order.f-a,
+.fb-pulse-g.f-a {
+  --fc: var(--f-a);
+}
+.fb-order[class*='f-'] {
+  stroke: var(--fc);
+}
+.fb-rf {
+  font-size: 17px;
+  font-weight: 900;
+  font-style: italic;
+}
+.fb-rf.f-p { fill: var(--f-p); }
+.fb-rf.f-i { fill: var(--f-i); }
+.fb-rf.f-m { fill: var(--f-m); }
+.fb-rf.f-a { fill: var(--f-a); }
+.fb-pulse {
+  fill: none;
+  stroke: var(--fc, var(--accent-2));
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pluck 0.55s ease-out forwards;
+}
+.fb-pulse-finger {
+  fill: var(--fc, var(--accent-2));
+  font-size: 16px;
+  font-weight: 900;
+  font-style: italic;
+  animation: pluck-fade 0.55s ease-out forwards;
+}
+@keyframes pluck {
+  from {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes pluck-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fb-pulse,
+  .fb-pulse-finger {
+    animation: none;
+  }
+}
+.board-tools {
+  margin-top: 0.4rem;
+}
+.rf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.rf-chip {
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.rf-chip b {
+  font-style: italic;
+}
+.rf-chip.f-p b { color: var(--f-p); }
+.rf-chip.f-i b { color: var(--f-i); }
+.rf-chip.f-m b { color: var(--f-m); }
+.rf-chip.f-a b { color: var(--f-a); }
 .fb-order-num {
   fill: var(--accent-2);
   font-size: 12px;
@@ -772,7 +870,7 @@ textarea.code {
   content: '';
 }
 .pattern .tc.now {
-  background-color: rgba(240, 166, 74, 0.18);
+  background-color: rgba(240, 166, 74, 0.1);
 }
 .pattern .tc.now.hit {
   background: var(--accent);
@@ -1340,6 +1438,26 @@ textarea.code {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+.yt-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+.yt-option {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.8rem;
+}
+.yt-option:first-child {
+  border-color: var(--accent);
+}
+@media (max-width: 900px) {
+  .yt-options {
+    grid-template-columns: 1fr;
+  }
 }
 .steps {
   color: var(--muted);

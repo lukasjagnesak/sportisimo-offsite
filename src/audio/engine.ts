@@ -126,22 +126,29 @@ export async function getMicrophone(): Promise<MediaStream> {
   });
 }
 
-/** Zachytí zvuk z karty prohlížeče (např. YouTube). Funguje v Chrome/Edge na počítači. */
-export async function getTabAudio(): Promise<MediaStream> {
-  if (!navigator.mediaDevices?.getDisplayMedia) throw new Error('Prohlížeč nepodporuje sdílení zvuku z karty. Použijte Chrome nebo Edge na počítači.');
+/**
+ * Zachytí zvuk z karty prohlížeče (např. YouTube). Funguje v Chrome/Edge na počítači.
+ * `currentTab` = nabídnout rovnou tuto kartu (vložený přehrávač), jinak si uživatel vybere jinou kartu.
+ */
+export async function getTabAudio(currentTab = false): Promise<MediaStream> {
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    throw new Error('Tento prohlížeč neumí sdílet zvuk z karty. Použij Chrome nebo Edge na počítači (na mobilu to nejde).');
+  }
   const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: true,
+    // Chrome vyžaduje i video; stopu necháme běžet – její zastavení může ukončit celé sdílení včetně zvuku.
+    video: { frameRate: 1, width: 320, height: 180 },
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-    // Nestandardní volby Chromu: nabídnout aktuální kartu a sdílení zvuku.
-    preferCurrentTab: true,
-    selfBrowserSurface: 'include',
+    // Nestandardní volby Chromu.
+    preferCurrentTab: currentTab,
+    selfBrowserSurface: currentTab ? 'include' : 'exclude',
+    surfaceSwitching: 'exclude',
     systemAudio: 'include',
   } as DisplayMediaStreamOptions);
-  if (stream.getAudioTracks().length === 0) {
+  const audio = stream.getAudioTracks()[0];
+  if (!audio || audio.readyState !== 'live') {
     stream.getTracks().forEach((t) => t.stop());
-    throw new Error('Nebyl sdílen žádný zvuk. Při výběru karty zaškrtněte „Sdílet i zvuk karty“.');
+    throw new Error('Nesdílel se žádný zvuk. V okně sdílení vyber záložku „Karta“ (Chrome Tab), kartu s videem a zapni přepínač „Sdílet i zvuk karty“.');
   }
-  stream.getVideoTracks().forEach((t) => t.stop());
   return stream;
 }
 
